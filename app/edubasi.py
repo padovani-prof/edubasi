@@ -45,7 +45,8 @@ def iniciar_sessao():
     if "municipios_multiplos" not in st.session_state:
         st.session_state["municipios_multiplos"] = []
     if "anos" not in st.session_state:
-        st.session_state["anos"] = obter_anos()
+        #st.session_state["anos"] = obter_anos()
+        st.session_state["anos"] = ['2018', '2022']
 
 @st.cache_resource
 def obter_municipios():
@@ -78,4 +79,5 @@ def obter_anos_selecionados():
     return st.session_state["anos"]
     
 def selecionar_anos(lista_anos):
+
     st.session_state["anos"] = lista_anos
