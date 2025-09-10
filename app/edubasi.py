@@ -36,7 +36,16 @@ def obter_dados(ano, id_municipio):
     parquet_dir = __obter_parquet_dir()
     parquet = os.path.join(parquet_dir, ano, f"{ano}_{id_municipio}.parquet")
     con = __conectar()
-    st.session_state[id_sessao] = con.execute(f"SELECT * FROM parquet_scan('{parquet}')").df()
+    df = con.execute(f"SELECT * FROM parquet_scan('{parquet}')").df()
+    if str(ano) == '2018':
+        df["TP_ESTADO_CIVIL"] = df["TP_ESTADO_CIVIL"].fillna("-1")
+        df["TP_ESTADO_CIVIL"] = (df["TP_ESTADO_CIVIL"].astype(int) + 1).astype(str)
+        df["TP_ESCOLA"] = df["TP_ESCOLA"].replace({3: 4, 4: 3})
+        df["TP_PRESENCA_CN"] = df["TP_PRESENCA_CN"].replace({None: '0'})
+        df["TP_PRESENCA_CH"] = df["TP_PRESENCA_CH"].replace({None: '0'})
+        df["TP_PRESENCA_LC"] = df["TP_PRESENCA_LC"].replace({None: '0'})
+        df["TP_PRESENCA_MT"] = df["TP_PRESENCA_MT"].replace({None: '0'})
+    st.session_state[id_sessao] = df
     return st.session_state[id_sessao]
 
 def iniciar_sessao():
@@ -81,3 +90,4 @@ def obter_anos_selecionados():
 def selecionar_anos(lista_anos):
 
     st.session_state["anos"] = lista_anos
+
