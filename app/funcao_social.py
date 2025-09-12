@@ -1,0 +1,68 @@
+import plotly.express as px
+import pandas as pd
+
+
+# ========================filtro Sexualidade=============================================
+def filtrar_por_sexo(df, sexo):
+    if sexo == 'Masculino':
+        return df[df['TP_SEXO'] == 'M']
+    elif sexo == 'Feminino':
+        return df[df['TP_SEXO'] == 'F']
+    else:
+        return df
+
+# ========================filtro idade===================================================
+def filtrar_por_idade(df, idade):
+    aux = []
+    map_idade = {
+        "Menor de 17 anos": '1',
+        "17 anos": '2',
+        "18 anos": '3',
+        "19 anos": '4',
+        "20 anos": '5',
+        "21 anos": '6',
+        "22 anos": '7',
+        "23 anos": '8',
+        "24 anos": '9',
+        "25 anos": '10',
+        "Entre 26 e 30 anos": '11',
+        "Entre 31 e 35 anos": '12',
+        "Entre 36 e 40 anos": '13',
+        "Entre 41 e 45 anos": '14',
+        "Entre 46 e 50 anos": '15',
+        "Entre 51 e 55 anos": '16',
+        "Entre 56 e 60 anos": '17',
+        "Entre 61 e 65 anos": '18',
+        "Entre 66 e 70 anos": '19',
+        "Maior de 70 anos": '20'
+    }
+    if len(idade) > 0:
+        for i in idade:
+            aux.append(map_idade[i])
+        df = df[df['TP_FAIXA_ETARIA'].isin(aux)]
+        return df
+    else:
+        return df
+
+
+#==========================================================================================================
+def grafico_barra (df,coluna, col1, col2, tile, orientacao, map):
+    if orientacao == 'h':
+        info = df[coluna].map(map).value_counts().reset_index()
+        info.columns = [col1 , col2]
+        #st.write(info)
+        barra = px.bar(info, x=col2, y=col1, color=col2, title=tile, orientation=orientacao, text=col2)
+        return barra
+    else:
+        info = df[coluna].map(map).value_counts().reset_index()
+        info.columns = [col1, col2]
+        #st.write(info)
+        barra = px.bar(info, x=col1, y=col2, color=col2, title=tile, orientation=orientacao, text=col2)
+        return barra
+#========================================================================================================
+def grafico_pizza (df, coluna, col1, col2, tile, map):
+    info = df[coluna].map(map).value_counts().reset_index()
+    info.columns = [col1 , col2]
+    pizza = px.pie(info, names=col1, values=col2, color_discrete_sequence=px.colors.qualitative.Plotly_r, title=tile)
+
+    return pizza

@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-from plotly.graph_objs import Figure
-
+import funcao_social as fs
 import edubasi
-import plotly.express as px
+
 
 def pagina_enem_social():
     edubasi.iniciar_sessao()
@@ -28,55 +26,14 @@ def pagina_enem_social():
     st.write("Quantidade de registros: " + str(qtd))
 
 
-# ======================== filtro ============================================
-    def filtrar_por_sexo(df, sexo):
-        if sexo == 'Masculino':
-            return df[df['TP_SEXO'] == 'M']
-        elif sexo == 'Feminino':
-            return df[df['TP_SEXO'] == 'F']
-        else:
-            return df
-
-    def filtrar_por_idade(df, idade):
-        map_idade = {
-            "Menor de 17 anos": 1,
-            "17 anos": 2,
-            "18 anos": 3,
-            "19 anos": 4,
-            "20 anos": 5,
-            "21 anos": 6,
-            "22 anos": 7,
-            "23 anos": 8,
-            "24 anos": 9,
-            "25 anos": 10,
-            "Entre 26 e 30 anos": 11,
-            "Entre 31 e 35 anos": 12,
-            "Entre 36 e 40 anos": 13,
-            "Entre 41 e 45 anos": 14,
-            "Entre 46 e 50 anos": 15,
-            "Entre 51 e 55 anos": 16,
-            "Entre 56 e 60 anos": 17,
-            "Entre 61 e 65 anos": 18,
-            "Entre 66 e 70 anos": 19,
-            "Maior de 70 anos": 20
-        }
-        ids = []
-        for i in idade:
-            if i in map_idade:
-                ids.append(map_idade[i])
-
     Sexualidade = st.multiselect(
         "Selecione a sexualidade:",
         ['Masculino', "Feminino"],
         placeholder="Selecione uma sexualidade",
     )
-
     resultado = ", ".join(Sexualidade)
     st.write("Sexualidade:", resultado)
-    df = filtrar_por_sexo(df, resultado)
-    #st.write(df)
-    st.write(len(df))
-
+    df = fs.filtrar_por_sexo(df, resultado)
 
     idade = st.multiselect(
         "Selecione a idade:",
@@ -102,34 +59,13 @@ def pagina_enem_social():
         "Maior de 70 anos"],
         placeholder="Selecione uma idade"
     )
-    resultado1 = ", ".join(idade)
+    resultado1 = ", " .join(idade)
     st.write("Idades selecionadas:", resultado1)
+    df = fs.filtrar_por_idade(df, idade)
+    st.write(df)
+    st.write(len(df))
 
-    aux = filtrar_por_idade(df, resultado1)
-    st.write(aux)
 
-
-#==========================================================================================================
-    def grafico_barra (coluna, col1, col2, tile, orientacao, map):
-        if orientacao == 'h':
-            info = df[coluna].map(map).value_counts().reset_index()
-            info.columns = [col1 , col2]
-            #st.write(info)
-            barra = px.bar(info, x=col2, y=col1, color=col2, title=tile, orientation=orientacao, text=col2)
-            return barra
-        else:
-            info = df[coluna].map(map).value_counts().reset_index()
-            info.columns = [col1, col2]
-            #st.write(info)
-            barra = px.bar(info, x=col1, y=col2, color=col2, title=tile, orientation=orientacao, text=col2)
-            return barra
-#========================================================================================================
-    def grafico_pizza (coluna, col1, col2, tile, map):
-        info = df[coluna].map(map).value_counts().reset_index()
-        info.columns = [col1 , col2]
-        pizza = px.pie(info, names=col1, values=col2, color_discrete_sequence=px.colors.qualitative.Plotly_r, title=tile)
-
-        return pizza
 
 #================== expander 1 ===================================================
 #=================================================================================
@@ -143,11 +79,12 @@ def pagina_enem_social():
                 '3': "Municipal",
                 '4': "Privada"
             }
-            pizza1 = grafico_pizza("TP_DEPENDENCIA_ADM_ESC",
-                                  "Tipo de dependência",
-                                  "Quantidade",
-                                  'Tipo de dependência',
-                                   map)
+            pizza1 = fs.grafico_pizza(df,
+                "TP_DEPENDENCIA_ADM_ESC",
+                "Tipo de dependência",
+                "Quantidade",
+                'Tipo de dependência',
+                map)
             pizza1.update_traces(textinfo='percent', textfont_size=14)
             st.plotly_chart(pizza1)
     # ============ Tipo de ensino ================================
@@ -156,11 +93,13 @@ def pagina_enem_social():
                 '1': 'Urbana',
                 '2': 'Rural'
             }
-            pizza2 = grafico_pizza('TP_LOCALIZACAO_ESC',
-                               'tipo_de_zona',
-                               'quantidade',
-                               'Tipos de Zonas',
-                               map)
+            pizza2 = fs.grafico_pizza(
+                df,
+                'TP_LOCALIZACAO_ESC',
+                'tipo_de_zona',
+                'quantidade',
+                'Tipos de Zonas',
+                map)
             st.plotly_chart(pizza2)
     # =========== zona territorial ==============================
 
@@ -170,12 +109,14 @@ def pagina_enem_social():
         '2': "Educação Especial - Modalidade Substitutiva",
         '3': "Educação de Jovens e Adultos"
         }
-        barra1 = grafico_barra('TP_ENSINO',
-                           'tipo de ensino',
-                           'quantidade',
-                           'Tipo de ensino',
-                           'v',
-                           map)
+        barra1 = fs.grafico_barra(
+            df,
+            'TP_ENSINO',
+            'tipo de ensino',
+            'quantidade',
+            'Tipo de ensino',
+            'v',
+            map)
         st.plotly_chart(barra1)
     # ================== expander 2 ===================================================
     # =================================================================================
@@ -185,23 +126,27 @@ def pagina_enem_social():
             '0': "Inglês",
             '1': "Espanhol"
         }
-        barra2 = grafico_barra('TP_LINGUA',
-                               'tipo_de_lingua',
-                               'quantidade',
-                               'Tipo de linguagem estrangeira escolhida',
-                               'v',
-                               map)
+        barra2 = fs.grafico_barra(
+            df,
+            'TP_LINGUA',
+            'tipo_de_lingua',
+            'quantidade',
+            'Tipo de linguagem estrangeira escolhida',
+            'v',
+            map)
         st.plotly_chart(barra2)
     # =========== prova treino ou não =========================
         map = {
             '1':'Realizando prova para treino',
             '0':'Prova valendo pontuação'
     }
-        pizza3 = grafico_pizza('IN_TREINEIRO',
-                               'qual_modalidade',
-                               'treino_ou_não',
-                               'Tipo de Modalidade de Prova',
-                               map)
+        pizza3 = fs.grafico_pizza(
+            df,
+            'IN_TREINEIRO',
+            'qual_modalidade',
+            'treino_ou_não',
+            'Tipo de Modalidade de Prova',
+            map)
         st.plotly_chart(pizza3)
 
 # ================== expander 3 ===================================================
@@ -215,12 +160,14 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        barra8 = grafico_barra('Q014',
-                               'possui quantas maquinas de lavar?',
-                               'Quantidade de respostas',
-                               'Possuem maquinas de lavar roupa',
-                               'h',
-                               map)
+        barra8 = fs.grafico_barra(
+            df,
+            'Q014',
+            'possui quantas maquinas de lavar?',
+            'Quantidade de respostas',
+            'Possuem maquinas de lavar roupa',
+            'h',
+            map)
         st.plotly_chart(barra8)
     # ======== micro-ondas ======================================
         map = {
@@ -230,11 +177,13 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        pizza5 = grafico_pizza("Q016",
-                               'Possui micro-ondas',
-                               'resposta',
-                               'Possuem Micro-ondas',
-                               map)
+        pizza5 = fs.grafico_pizza(
+            df,
+            "Q016",
+            'Possui micro-ondas',
+            'resposta',
+            'Possuem Micro-ondas',
+            map)
         st.plotly_chart(pizza5)
     # ========= televisão =======================================
         map = {
@@ -244,11 +193,13 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        pizza6 = grafico_pizza('Q019',
-                               'Possui televisão de cor',
-                               'resposta',
-                               'Possuem televisão de cor',
-                               map)
+        pizza6 = fs.grafico_pizza(
+            df,
+            'Q019',
+            'Possui televisão de cor',
+            'resposta',
+            'Possuem televisão de cor',
+            map)
         st.plotly_chart(pizza6)
 
 # ================== expander 4 ===================================================
@@ -262,12 +213,14 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        barra7 = grafico_barra('Q011',
-                               'possuem moto',
-                               'Quantas motos possuem',
-                               'Possuem Moto',
-                               'h',
-                               map)
+        barra7 = fs.grafico_barra(
+            df,
+            'Q011',
+            'possuem moto',
+            'Quantas motos possuem',
+            'Possuem Moto',
+            'h',
+            map)
         st.plotly_chart(barra7)
 
     # ========== automovel carro ==============================
@@ -278,12 +231,14 @@ def pagina_enem_social():
             "D": "Sim, três.",
             "E": "Sim, quatro ou mais."
         }
-        barra6 = grafico_barra('Q010',
-                               'possuem carro',
-                               'Quantas carros possuem',
-                               'Possuem Carro',
-                               'h',
-                               map)
+        barra6 = fs.grafico_barra(
+            df,
+            'Q010',
+            'possuem carro',
+            'Quantas carros possuem',
+            'Possuem Carro',
+            'h',
+            map)
         st.plotly_chart(barra6)
 
     # ========= automoveis =====================================TESTE
@@ -311,12 +266,14 @@ def pagina_enem_social():
             "C": "Sim, três ou quatro dias por semana.",
             "D": "Sim, pelo menos cinco dias por semana."
         }
-        barra3 = grafico_barra('Q007',
-                                 'Possui empregada domestica',
-                                 'quantidade',
-                                 'Possue Empregada',
-                                 'v',
-                               map)
+        barra3 = fs.grafico_barra(
+            df,
+            'Q007',
+            'Possui empregada domestica',
+            'quantidade',
+            'Possue Empregada',
+            'v',
+            map)
         st.plotly_chart(barra3)
     #========== possui banheiro ===============================
         map = {
@@ -326,12 +283,14 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        barra4 = grafico_barra('Q008',
-                                'possui_banheiro',
-                                'quantidade',
-                                'Possuem Banheiro',
-                                'h',
-                               map)
+        barra4 = fs.grafico_barra(
+            df,
+            'Q008',
+            'possui_banheiro',
+            'quantidade',
+            'Possuem Banheiro',
+            'h',
+            map)
         st.plotly_chart(barra4)
     #========== quartos ======================================
         map = {
@@ -341,12 +300,14 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        barra5 = grafico_barra('Q009',
-                                'possui_quantos_quartos',
-                                'quantidade',
-                                'Possui quantos quartos na casa ',
-                                'h',
-                               map)
+        barra5 = fs.grafico_barra(
+            df,
+            'Q009',
+            'possui_quantos_quartos',
+            'quantidade',
+            'Possui quantos quartos na casa ',
+            'h',
+            map)
         st.plotly_chart(barra5)
 
 # ================== expander 6 ===================================================
@@ -357,11 +318,13 @@ def pagina_enem_social():
             'A':'Não.',
             'B': 'Sim.'
     }
-        pizza4 = grafico_pizza('Q025',
-                               'possuem internet',
-                               'Respostas',
-                               'Possuem Internet',
-                               map)
+        pizza4 = fs.grafico_pizza(
+            df,
+            'Q025',
+            'possuem internet',
+            'Respostas',
+            'Possuem Internet',
+            map)
         st.plotly_chart(pizza4)
     #=========  celular ========================================
         map = {
@@ -371,12 +334,14 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        barra9 = grafico_barra('Q022',
-                               'Possui celular',
-                               'resposta',
-                               'Possuem Celular',
-                               'h',
-                               map)
+        barra9 = fs.grafico_barra(
+            df,
+            'Q022',
+            'Possui celular',
+            'resposta',
+            'Possuem Celular',
+            'h',
+            map)
         st.plotly_chart(barra9)
     #========= computador ======================================
         map = {
@@ -386,11 +351,13 @@ def pagina_enem_social():
             "D": "Três.",
             "E": "Quatro ou mais."
         }
-        pizza7 = grafico_pizza('Q024',
-                               'Possuem computador',
-                               'Quantos computadores possuem',
-                               'Possuem Computador',
-                               map)
+        pizza7 = fs.grafico_pizza(
+            df,
+            'Q024',
+            'Possuem computador',
+            'Quantos computadores possuem',
+            'Possuem Computador',
+            map)
         st.plotly_chart(pizza7)
 
 
