@@ -15,7 +15,7 @@ def pagina_enem_social():
         st.write(ano)
         df = edubasi.obter_dados(ano = ano, id_municipio = edubasi.obter_municipio_selecionado())
         if True:
-            df = df[df['CO_MUNICIPIO_ESC'] == edubasi.obter_municipio_selecionado()]
+            df = df[df['CO_MUNICIPIO_PROVA'] == edubasi.obter_municipio_selecionado()]
         aux.append(df)
         qtd += len(df)
 
@@ -25,48 +25,87 @@ def pagina_enem_social():
     st.write("Municípios múltiplos selecionados:", edubasi.obter_municipios_selecionados())
     st.write("Quantidade de registros: " + str(qtd))
 
+#================================================================
+    with st.sidebar:
+        st.header("Filtros da pagina Social")
+        Sexualidade = st.multiselect(
+            "Selecione a sexualidade:",
+            ['Masculino', "Feminino"],
+            placeholder="Selecione uma sexualidade",
+        )
+        #resultado = ", ".join(Sexualidade)
+        #st.write("Sexualidade:", resultado)
+        df = fs.filtro_por_sexo(df, Sexualidade)
+    #================================================================
+        idade = st.multiselect(
+            "Selecione a idade:",
+            ["Menor de 17 anos",
+            "17 anos",
+            "18 anos",
+            "19 anos",
+            "20 anos",
+            "21 anos",
+            "22 anos",
+            "23 anos",
+            "24 anos",
+            "25 anos",
+            "Entre 26 e 30 anos",
+            "Entre 31 e 35 anos",
+            "Entre 36 e 40 anos",
+            "Entre 41 e 45 anos",
+            "Entre 46 e 50 anos",
+            "Entre 51 e 55 anos",
+            "Entre 56 e 60 anos",
+            "Entre 61 e 65 anos",
+            "Entre 66 e 70 anos",
+            "Maior de 70 anos"],
+            placeholder="Selecione uma idade"
+        )
+        #resultado1 = ", " .join(idade)
+        #st.write("Idades selecionadas:", resultado1)
+        df = fs.filtro_por_idade(df, idade)
 
-    Sexualidade = st.multiselect(
-        "Selecione a sexualidade:",
-        ['Masculino', "Feminino"],
-        placeholder="Selecione uma sexualidade",
-    )
-    resultado = ", ".join(Sexualidade)
-    st.write("Sexualidade:", resultado)
-    df = fs.filtrar_por_sexo(df, resultado)
+    #==============================================================
+        ensino = st.multiselect(
+            "Selecione o tipo de ensino:",
+            ['Ensino Regular',
+             'Educação Especial',
+             'Educação de Jovens e Adultos'],
+            placeholder="Selecione um tipo de ensino"
+        )
 
-    idade = st.multiselect(
-        "Selecione a idade:",
-        ["Menor de 17 anos",
-        "17 anos",
-        "18 anos",
-        "19 anos",
-        "20 anos",
-        "21 anos",
-        "22 anos",
-        "23 anos",
-        "24 anos",
-        "25 anos",
-        "Entre 26 e 30 anos",
-        "Entre 31 e 35 anos",
-        "Entre 36 e 40 anos",
-        "Entre 41 e 45 anos",
-        "Entre 46 e 50 anos",
-        "Entre 51 e 55 anos",
-        "Entre 56 e 60 anos",
-        "Entre 61 e 65 anos",
-        "Entre 66 e 70 anos",
-        "Maior de 70 anos"],
-        placeholder="Selecione uma idade"
-    )
-    resultado1 = ", " .join(idade)
-    st.write("Idades selecionadas:", resultado1)
-    df = fs.filtrar_por_idade(df, idade)
+        #resultado2 = ", ".join(ensino)
+        #st.write("Idades selecionadas:", resultado2)
+        df = fs.filtro_tipo_ensino(df, ensino)
+    #==============================================================
+        dependencia = st.multiselect(
+            "Selecione o tipo de dependência:",
+            [
+            'Federal',
+            'Estadual',
+            'Municipal',
+            'Privada'
+            ],
+            placeholder="Selecione um tipo de dependência"
+        )
+        #resultado3 = ", ".join(dependencia)
+        #st.write("Idades selecionadas:", resultado3)
+        df = fs.filtro_dependencia(df, dependencia)
+
+        zona = st.multiselect(
+            "Selecione o tipo de zona:",
+            [
+            'Urbana',
+            'Rural'
+            ],
+            placeholder="Selecione um tipo de zona"
+        )
+        #resultado4 = ", ".join(zona)
+        #st.write("Idades selecionadas:", resultado4)
+        df = fs.filtro_zona(df, zona)
+#========================================================
     st.write(df)
     st.write(len(df))
-
-
-
 #================== expander 1 ===================================================
 #=================================================================================
     with st.expander("DADOS ESCOLARES"):

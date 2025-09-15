@@ -3,16 +3,22 @@ import pandas as pd
 
 
 # ========================filtro Sexualidade=============================================
-def filtrar_por_sexo(df, sexo):
-    if sexo == 'Masculino':
-        return df[df['TP_SEXO'] == 'M']
-    elif sexo == 'Feminino':
-        return df[df['TP_SEXO'] == 'F']
+def filtro_por_sexo(df, sexo):
+    aux = []
+    map_sexo = {
+        "Masculino": 'M',
+        "Feminino": 'F'
+    }
+    if len(sexo) > 0:
+        for i in sexo:
+            aux.append(map_sexo[i])
+        df = df[df['TP_SEXO'].isin(aux)]
+        return df
     else:
         return df
 
 # ========================filtro idade===================================================
-def filtrar_por_idade(df, idade):
+def filtro_por_idade(df, idade):
     aux = []
     map_idade = {
         "Menor de 17 anos": '1',
@@ -43,8 +49,51 @@ def filtrar_por_idade(df, idade):
         return df
     else:
         return df
-
-
+#=========================================================
+def filtro_tipo_ensino(df, ensino):
+    aux = []
+    map_ensino = {
+        'Ensino Regular':'1',
+        'Educação Especial':'2',
+        'Educação de Jovens e Adultos':'3'
+    }
+    if len(ensino) > 0:
+        for i in ensino:
+            aux.append(map_ensino[i])
+        df = df[df['TP_ENSINO'].isin(aux)]
+        return df
+    else:
+        return df
+#=========================================================
+def filtro_dependencia(df, dependencia):
+    aux = []
+    map_dependencia = {
+    'Federal':'1',
+    'Estadual':'2',
+    'Municipal':'3',
+    'Privada':'4'
+    }
+    if len(dependencia) > 0:
+        for i in dependencia:
+            aux.append(map_dependencia[i])
+        df = df[df['TP_DEPENDENCIA_ADM_ESC'].isin(aux)]
+        return df
+    else:
+        return df
+#=========================================================
+def filtro_zona(df,zona):
+    aux = []
+    map_zona = {
+        'Urbana':'1',
+        'Rural':'2'
+        }
+    if len(zona) > 0:
+        for i in zona:
+            aux.append(map_zona[i])
+        df = df[df['TP_LOCALIZACAO_ESC'].isin(aux)]
+        return df
+    else:
+        return df
 #==========================================================================================================
 def grafico_barra (df,coluna, col1, col2, tile, orientacao, map):
     if orientacao == 'h':
