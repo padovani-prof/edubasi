@@ -1,3 +1,4 @@
+import streamlit as st
 import plotly.express as px
 import pandas as pd
 
@@ -99,19 +100,59 @@ def grafico_barra (df,coluna, col1, col2, tile, orientacao, map):
     if orientacao == 'h':
         info = df[coluna].map(map).value_counts().reset_index()
         info.columns = [col1 , col2]
-        #st.write(info)
-        barra = px.bar(info, x=col2, y=col1, color=col2, title=tile, orientation=orientacao, text=col2)
+
+        total = info[col2].sum()
+        info["percentual"] = info[col2] / total * 100
+        info["texto"] = info["percentual"].map("{:.2f}%".format)
+
+
+        st.write(info)
+        barra = px.bar(info,
+                       x=col2,
+                       y=col1,
+                       title=tile,
+                       color=None,
+                       color_discrete_sequence=['Blue'],
+                       orientation=orientacao,
+                       text=info["texto"])
+        barra.update_traces(textfont_size=15)
+        barra.update_xaxes(title_text='')
+        barra.update_yaxes(title_text='')
+        barra.update_layout(autosize=True)
         return barra
     else:
         info = df[coluna].map(map).value_counts().reset_index()
         info.columns = [col1, col2]
-        #st.write(info)
-        barra = px.bar(info, x=col1, y=col2, color=col2, title=tile, orientation=orientacao, text=col2)
+
+        total = info[col2].sum()
+        info["percentual"] = info[col2] / total * 100
+        info["texto"] = info["percentual"].map("{:.2f}%".format)
+
+        st.write(info)
+        barra = px.bar(info,
+                       x=col1,
+                       y=col2,
+                       color=None,
+                       color_discrete_sequence=['Blue'],
+                       title=tile,
+                       orientation=orientacao,
+                       text=info["texto"],
+                       )
+
+        barra.update_traces(textfont_size=15)
+        barra.update_xaxes(title_text='')
+        barra.update_yaxes(title_text='')
+        barra.update_layout(autosize=True)
         return barra
 #========================================================================================================
 def grafico_pizza (df, coluna, col1, col2, tile, map):
     info = df[coluna].map(map).value_counts().reset_index()
     info.columns = [col1 , col2]
-    pizza = px.pie(info, names=col1, values=col2, color_discrete_sequence=px.colors.qualitative.Plotly_r, title=tile)
+    cores_map = [
+        '#FF6347',
+        '#FFD700',
+        '#90EE90'
+    ]
+    pizza = px.pie(info, names=col1, values=col2, color_discrete_sequence=cores_map, title=tile)
 
     return pizza

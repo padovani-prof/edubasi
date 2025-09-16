@@ -9,25 +9,21 @@ def pagina_enem_social():
     
     st.title("Perspectiva Social")
 
-    qtd = 0
     aux = []
     for ano in edubasi.obter_anos_selecionados():
         st.write(ano)
         df = edubasi.obter_dados(ano = ano, id_municipio = edubasi.obter_municipio_selecionado())
-        if True:
-            df = df[df['CO_MUNICIPIO_PROVA'] == edubasi.obter_municipio_selecionado()]
         aux.append(df)
-        qtd += len(df)
 
     df = pd.concat(aux, ignore_index=True, sort=False)
-
-    st.write("Município único selecionado:", edubasi.obter_municipio_selecionado())
-    st.write("Municípios múltiplos selecionados:", edubasi.obter_municipios_selecionados())
-    st.write("Quantidade de registros: " + str(qtd))
 
 #================================================================
     with st.sidebar:
         st.header("Filtros da pagina Social")
+        resp = st.checkbox(label='dados de escolas de Itaoatiara/AM.')
+        if resp:
+            df = df[df['CO_MUNICIPIO_ESC'] == edubasi.obter_municipio_selecionado()]
+
         Sexualidade = st.multiselect(
             "Selecione a sexualidade:",
             ['Masculino', "Feminino"],
@@ -36,7 +32,7 @@ def pagina_enem_social():
         #resultado = ", ".join(Sexualidade)
         #st.write("Sexualidade:", resultado)
         df = fs.filtro_por_sexo(df, Sexualidade)
-    #================================================================
+
         idade = st.multiselect(
             "Selecione a idade:",
             ["Menor de 17 anos",
@@ -65,7 +61,6 @@ def pagina_enem_social():
         #st.write("Idades selecionadas:", resultado1)
         df = fs.filtro_por_idade(df, idade)
 
-    #==============================================================
         ensino = st.multiselect(
             "Selecione o tipo de ensino:",
             ['Ensino Regular',
@@ -77,7 +72,7 @@ def pagina_enem_social():
         #resultado2 = ", ".join(ensino)
         #st.write("Idades selecionadas:", resultado2)
         df = fs.filtro_tipo_ensino(df, ensino)
-    #==============================================================
+
         dependencia = st.multiselect(
             "Selecione o tipo de dependência:",
             [
@@ -103,11 +98,19 @@ def pagina_enem_social():
         #resultado4 = ", ".join(zona)
         #st.write("Idades selecionadas:", resultado4)
         df = fs.filtro_zona(df, zona)
-#========================================================
-    st.write(df)
-    st.write(len(df))
+
+#====================== Cabeçalho ==============================================
+
+    st.write("Município único selecionado:", edubasi.obter_municipio_selecionado())
+    st.write("Municípios múltiplos selecionados:", edubasi.obter_municipios_selecionados())
+    cont = len(df)
+    if len(df) >=1 :
+        st.write("Quantidade de registros: ", str(cont))
+    else:
+        st.write("Nenhum registro encontrado com os filtros selecionados.")
+
 #================== expander 1 ===================================================
-#=================================================================================
+
     with st.expander("DADOS ESCOLARES"):
     #============ tipo de depedencia ===========================
         col1, col2 = st.columns(2)
@@ -124,7 +127,7 @@ def pagina_enem_social():
                 "Quantidade",
                 'Tipo de dependência',
                 map)
-            pizza1.update_traces(textinfo='percent', textfont_size=14)
+            pizza1.update_traces(textfont_size=15)
             st.plotly_chart(pizza1)
     # ============ Tipo de ensino ================================
         with col2:
@@ -139,6 +142,7 @@ def pagina_enem_social():
                 'quantidade',
                 'Tipos de Zonas',
                 map)
+            pizza2.update_traces(textfont_size=15)
             st.plotly_chart(pizza2)
     # =========== zona territorial ==============================
 
@@ -190,7 +194,7 @@ def pagina_enem_social():
 
 # ================== expander 3 ===================================================
 # =================================================================================
-    with st.expander("DADOS SOBRE ELETRO-DOMESTICO"):
+    with st.expander("DADOS SOBRE ELETRO-DOMESTICO", expanded=True):
     # ======== maquina de lavar ================================
         map = {
             "A": "Nenhuma.",
