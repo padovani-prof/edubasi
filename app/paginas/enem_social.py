@@ -127,8 +127,6 @@ def pagina_enem_social():
                 "Quantidade",
                 'Tipo de dependência',
                 map)
-            pizza1.update_traces(textfont_size=15)
-            st.plotly_chart(pizza1)
     # ============ Tipo de ensino ================================
         with col2:
             map = {
@@ -142,8 +140,6 @@ def pagina_enem_social():
                 'quantidade',
                 'Tipos de Zonas',
                 map)
-            pizza2.update_traces(textfont_size=15)
-            st.plotly_chart(pizza2)
     # =========== zona territorial ==============================
 
 
@@ -160,7 +156,7 @@ def pagina_enem_social():
             'Tipo de ensino',
             'v',
             map)
-        st.plotly_chart(barra1)
+
     # ================== expander 2 ===================================================
     # =================================================================================
     with st.expander("DADOS DA PROVA"):
@@ -177,7 +173,7 @@ def pagina_enem_social():
             'Tipo de linguagem estrangeira escolhida',
             'v',
             map)
-        st.plotly_chart(barra2)
+
     # =========== prova treino ou não =========================
         map = {
             '1':'Realizando prova para treino',
@@ -190,7 +186,6 @@ def pagina_enem_social():
             'treino_ou_não',
             'Tipo de Modalidade de Prova',
             map)
-        st.plotly_chart(pizza3)
 
 # ================== expander 3 ===================================================
 # =================================================================================
@@ -211,7 +206,7 @@ def pagina_enem_social():
             'Possuem maquinas de lavar roupa',
             'h',
             map)
-        st.plotly_chart(barra8)
+
     # ======== micro-ondas ======================================
         map = {
             "A": "Nenhum.",
@@ -227,7 +222,7 @@ def pagina_enem_social():
             'resposta',
             'Possuem Micro-ondas',
             map)
-        st.plotly_chart(pizza5)
+
     # ========= televisão =======================================
         map = {
             "A": "Nenhuma.",
@@ -243,7 +238,6 @@ def pagina_enem_social():
             'resposta',
             'Possuem televisão de cor',
             map)
-        st.plotly_chart(pizza6)
 
 # ================== expander 4 ===================================================
 # =================================================================================
@@ -260,11 +254,10 @@ def pagina_enem_social():
             df,
             'Q011',
             'possuem moto',
-            'Quantas motos possuem',
+            'Quantidade de respostas',
             'Possuem Moto',
             'h',
             map)
-        st.plotly_chart(barra7)
 
     # ========== automovel carro ==============================
         map = {
@@ -278,11 +271,10 @@ def pagina_enem_social():
             df,
             'Q010',
             'possuem carro',
-            'Quantas carros possuem',
+            'Quantidade de respostas',
             'Possuem Carro',
             'h',
             map)
-        st.plotly_chart(barra6)
 
     # ========= automoveis =====================================TESTE
 
@@ -317,7 +309,7 @@ def pagina_enem_social():
             'Possue Empregada',
             'v',
             map)
-        st.plotly_chart(barra3)
+
     #========== possui banheiro ===============================
         map = {
             "A": "Nenhuma.",
@@ -334,7 +326,7 @@ def pagina_enem_social():
             'Possuem Banheiro',
             'h',
             map)
-        st.plotly_chart(barra4)
+
     #========== quartos ======================================
         map = {
             "A": "Nenhuma.",
@@ -351,7 +343,6 @@ def pagina_enem_social():
             'Possui quantos quartos na casa ',
             'h',
             map)
-        st.plotly_chart(barra5)
 
 # ================== expander 6 ===================================================
 # =================================================================================
@@ -368,7 +359,6 @@ def pagina_enem_social():
             'Respostas',
             'Possuem Internet',
             map)
-        st.plotly_chart(pizza4)
     #=========  celular ========================================
         map = {
             "A": "Nenhuma.",
@@ -385,7 +375,6 @@ def pagina_enem_social():
             'Possuem Celular',
             'h',
             map)
-        st.plotly_chart(barra9)
     #========= computador ======================================
         map = {
             "A": "Nenhuma.",
@@ -401,7 +390,3 @@ def pagina_enem_social():
             'Quantos computadores possuem',
             'Possuem Computador',
             map)
-        st.plotly_chart(pizza7)
-
-
-

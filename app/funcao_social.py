@@ -96,54 +96,64 @@ def filtro_zona(df,zona):
     else:
         return df
 #==========================================================================================================
-def grafico_barra (df,coluna, col1, col2, tile, orientacao, map):
+def grafico_barra(df, coluna, col1, col2, tile, orientacao, map):
+    # Pré-processamento
+    info = df[coluna].map(map).value_counts().reset_index()
+    info.columns = [col1, col2]
+
+    #porcentagem
+    total = info[col2].sum()
+    info["percentual"] = info[col2] / total * 100
+    info["texto"] = info["percentual"].map("{:.2f}%".format)
+
+    #cores
+    paleta = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+
+    # Mapeia cores para cada categoria
+    cores = {cat: paleta[i % len(paleta)] for i, cat in enumerate(info[col1].unique())}
+    info["cor"] = info[col1].map(cores)
+
+    #t.write(info)
+
     if orientacao == 'h':
-        info = df[coluna].map(map).value_counts().reset_index()
-        info.columns = [col1 , col2]
-
-        total = info[col2].sum()
-        info["percentual"] = info[col2] / total * 100
-        info["texto"] = info["percentual"].map("{:.2f}%".format)
-
-
-        st.write(info)
-        barra = px.bar(info,
-                       x=col2,
-                       y=col1,
-                       title=tile,
-                       color=None,
-                       color_discrete_sequence=['Blue'],
-                       orientation=orientacao,
-                       text=info["texto"])
-        barra.update_traces(textfont_size=15)
-        barra.update_xaxes(title_text='')
-        barra.update_yaxes(title_text='')
-        barra.update_layout(autosize=True)
-        return barra
+        info=info.sort_values(by=col2, ascending=True, inplace=False).reset_index(drop=True)
+        barra = px.bar(
+            info,
+            x=col2,
+            y=col1,
+            title=tile,
+            orientation=orientacao,
+            text=info["texto"]
+        )
     else:
-        info = df[coluna].map(map).value_counts().reset_index()
-        info.columns = [col1, col2]
+        barra = px.bar(
+            info,
+            x=col1,
+            y=col2,
+            title=tile,
+            orientation=orientacao,
+            text=info["texto"],
+            height=600
+        )
 
-        total = info[col2].sum()
-        info["percentual"] = info[col2] / total * 100
-        info["texto"] = info["percentual"].map("{:.2f}%".format)
+    # Aplica as cores manualmente (todas no mesmo trace)
+    barra.update_traces(marker_color=info["cor"], width=0.7, textfont_size=18, hoverinfo='x')
 
-        st.write(info)
-        barra = px.bar(info,
-                       x=col1,
-                       y=col2,
-                       color=None,
-                       color_discrete_sequence=['Blue'],
-                       title=tile,
-                       orientation=orientacao,
-                       text=info["texto"],
-                       )
+    # Remove títulos de eixo
+    barra.update_xaxes(title_text='')
+    barra.update_yaxes(title_text='')
 
-        barra.update_traces(textfont_size=15)
-        barra.update_xaxes(title_text='')
-        barra.update_yaxes(title_text='')
-        barra.update_layout(autosize=True)
-        return barra
+    # Ajusta layout para ocupar melhor o espaço
+    barra.update_layout(
+        autosize=True,
+        bargap=0.05,
+        bargroupgap=0.0,
+        showlegend=False ,
+        width=150,
+
+    )
+
+    return st.plotly_chart(barra, theme=None, use_container_width=True)
 #========================================================================================================
 def grafico_pizza (df, coluna, col1, col2, tile, map):
     info = df[coluna].map(map).value_counts().reset_index()
@@ -154,5 +164,6 @@ def grafico_pizza (df, coluna, col1, col2, tile, map):
         '#90EE90'
     ]
     pizza = px.pie(info, names=col1, values=col2, color_discrete_sequence=cores_map, title=tile)
+    pizza.update_traces(textfont_size=18)
 
-    return pizza
+    return st.plotly_chart(pizza, use_container_width=True)
