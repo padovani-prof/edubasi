@@ -533,7 +533,7 @@ with tabs[0]:
         contagem_renda["Renda"] = pd.Categorical(
             contagem_renda["Renda"], categories=ordem, ordered=True
         )
-        
+
 
         grafico_renda = px.bar(
             contagem_renda.sort_values("Renda"),
