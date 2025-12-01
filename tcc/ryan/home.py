@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -28,30 +27,146 @@ anos = st.sidebar.multiselect(
     default=[2019, 2023]
 )
 
-# Filtra os dados de acordo com os anos selecionados
 df_filtrado = df_final[df_final["ANO"].isin(anos)]
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Checkbox para incluir alunos sem escola e treineiros
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# -=-=-=-=-=-=-=-=-=-=--=-=-=-
+# GERAL
+# -=-=-=-=-=-=-=-=-=-=--=-=-=-
+with st.sidebar.expander("Geral"):
+    
+    incluir_alunos_sem_escola = st.checkbox("Incluir alunos sem escola", True)
+    if not incluir_alunos_sem_escola:
+        if "CO_MUNICIPIO_ESC" in df_filtrado.columns:
+            df_filtrado = df_filtrado[df_filtrado["CO_MUNICIPIO_ESC"] == 1301902]
 
-incluir_sem_escola = st.sidebar.checkbox(
-    "Incluir alunos sem escola",
-    value=True,
-    help="Se desmarcado, alunos sem informação de escola não serão considerados."
-)
-# Filtro de alunos sem escola
-if not incluir_sem_escola and "CO_MUNICIPIO_ESC" in df_filtrado.columns:
-    df_filtrado = df_filtrado[df_filtrado["CO_MUNICIPIO_ESC"].notna()]
+    incluir_treineiros = st.checkbox("Incluir estudantes treineiros", True)
+    if not incluir_treineiros:
+        if "IN_TREINEIRO" in df_filtrado.columns:
+            df_filtrado = df_filtrado[df_filtrado["IN_TREINEIRO"] != 1]
 
-incluir_treineiros = st.sidebar.checkbox(
-    "Incluir treineiros",
-    value=True,
-    help="Se desmarcado, alunos que são treineiros não serão considerados."
-)
-# Filtro de treineiros
-if not incluir_treineiros and "IN_TREINEIRO" in df_filtrado.columns:
-    df_filtrado = df_filtrado[df_filtrado["IN_TREINEIRO"] != 1]
+    # mapeamento de colunas
+    mapa_cor_raca = {
+        0: "Não declarado",
+        1: "Branca",
+        2: "Preta",
+        3: "Parda",
+        4: "Amarela",
+        5: "Indígena"
+    }
+
+    mapa_sexo = {
+        "M": "Masculino",
+        "F": "Feminino"
+    }
+
+    mapa_estado_civil = {
+        0: "Não informado",
+        1: "Solteiro(a)",
+        2: "Casado(a)/Mora com companheiro(a)",
+        3: "Divorciado(a)/Separado(a)",
+        4: "Viúvo(a)"
+    }
+
+    mapa_renda = {
+        "A": "Nenhuma renda",
+        "B": "Até R$ 1.320,00",
+        "C": "R$ 1.320,01 a R$ 1.980,00",
+        "D": "R$ 1.980,01 a R$ 2.640,00",
+        "E": "R$ 2.640,01 a R$ 3.300,00",
+        "F": "R$ 3.300,01 a R$ 3.960,00",
+        "G": "R$ 3.960,01 a R$ 4.620,00",
+        "H": "R$ 4.620,01 a R$ 5.280,00",
+        "I": "R$ 5.280,01 a R$ 6.600,00",
+        "J": "R$ 6.600,01 a R$ 7.920,00",
+        "K": "R$ 7.920,01 a R$ 9.240,00",
+        "L": "R$ 9.240,01 a R$ 10.560,00",
+        "M": "Acima de R$ 10.560,00"
+    }
+
+    if "TP_SEXO" in df_filtrado.columns:
+        df_filtrado["TP_SEXO"] = df_filtrado["TP_SEXO"].map(mapa_sexo)
+
+    if "TP_ESTADO_CIVIL" in df_filtrado.columns:
+        df_filtrado["TP_ESTADO_CIVIL"] = df_filtrado["TP_ESTADO_CIVIL"].map(mapa_estado_civil)
+
+    if "TP_COR_RACA" in df_filtrado.columns:
+        df_filtrado["TP_COR_RACA"] = df_filtrado["TP_COR_RACA"].map(mapa_cor_raca)
+
+    #=-=-=-=-=-=-=-=-=
+    # Sexo
+    #=-=-=-=-=-=-=-=-=
+    if "TP_SEXO" in df_filtrado.columns:
+        opcoes_sexo = ["Todos"] + sorted(df_filtrado["TP_SEXO"].dropna().unique())
+        filtro_sexo = st.selectbox("Sexo", opcoes_sexo)
+
+        if filtro_sexo != "Todos":
+            df_filtrado = df_filtrado[df_filtrado["TP_SEXO"] == filtro_sexo]
+
+    #=-=-=-=-=-=-=-=-=
+    # Estado civil
+    #=-=-=-=-=-=-=-=-=
+    if "TP_ESTADO_CIVIL" in df_filtrado.columns:
+        opcoes_estado = ["Todos"] + sorted(df_filtrado["TP_ESTADO_CIVIL"].dropna().unique())
+        filtro_estado = st.selectbox("Estado civil", opcoes_estado)
+
+        if filtro_estado != "Todos":
+            df_filtrado = df_filtrado[df_filtrado["TP_ESTADO_CIVIL"] == filtro_estado]
+
+    #=-=-=-=-=-=-=-=-=
+    # Cor / Raça
+    #=-=-=-=-=-=-=-=-=
+    if "TP_COR_RACA" in df_filtrado.columns:
+        opcoes_cor = ["Todos"] + sorted(df_filtrado["TP_COR_RACA"].dropna().unique())
+        filtro_cor = st.selectbox("Cor/raça", opcoes_cor)
+
+        if filtro_cor != "Todos":
+            df_filtrado = df_filtrado[df_filtrado["TP_COR_RACA"] == filtro_cor]
+
+#-=-=-=-=-=-=-=-=-=--=-=-=-
+# ESCOLA
+#-=-=-=-=-=-=-=-=-=--=-=-=-
+
+with st.sidebar.expander("Escola"):
+    mapa_escola = {
+        1: "Não respondeu",
+        2: "Pública",
+        3: "Privada"
+    }
+    if "TP_ESCOLA" in df_filtrado.columns:
+        df_filtrado["Tipo Escola"] = df_filtrado["TP_ESCOLA"].map(mapa_escola)
+
+        tipos = df_filtrado["Tipo Escola"].dropna().unique()
+        filtro_tipo = st.multiselect("Tipo de escola:", tipos, default=tipos)
+
+        df_filtrado = df_filtrado[df_filtrado["Tipo Escola"].isin(filtro_tipo)]
+
+
+#-=-=-=-=-=-=-=-=-=--=-=-=-
+# MORADIA, BENS E SERVIÇOS
+#-=-=-=-=-=-=-=-=-=--=-=-=-
+with st.sidebar.expander("Moradia, bens e serviços"):
+    # Número de pessoas na residência (Q025)
+    if "Q025" in df_filtrado.columns:
+        opcoes_q025 = sorted(df_filtrado["Q025"].dropna().unique())
+        sel_q025 = st.multiselect("Número de pessoas na residência (Q025):", opcoes_q025, default=opcoes_q025)
+        df_filtrado = df_filtrado[df_filtrado["Q025"].isin(sel_q025)]
+
+    # Tipo de moradia (Q024)
+    if "Q024" in df_filtrado.columns:
+        opcoes_q024 = sorted(df_filtrado["Q024"].dropna().unique())
+        sel_q024 = st.multiselect("Tipo de moradia (Q024):", opcoes_q024, default=opcoes_q024)
+        df_filtrado = df_filtrado[df_filtrado["Q024"].isin(sel_q024)]
+
+    # Possui carro (Q030) ou moto (Q031) - exemplo de filtro adicional
+    if "Q030" in df_filtrado.columns:
+        sel_carro = st.checkbox("Incluir apenas com carro (Q030)", value=False)
+        if sel_carro:
+            df_filtrado = df_filtrado[df_filtrado["Q030"] == 1]
+    if "Q031" in df_filtrado.columns:
+        sel_moto = st.checkbox("Incluir apenas com moto (Q031)", value=False)
+        if sel_moto:
+            df_filtrado = df_filtrado[df_filtrado["Q031"] == 1]
+
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # Título e cabeçalho
@@ -378,7 +493,7 @@ with tabs[0]:
         # Contagem dos dados de 2019
         estado_civil_2019 = df_2019["TP_ESTADO_CIVIL"].value_counts().reset_index()
         estado_civil_2019.columns = ["Estado Civil", "Quantidade"]
-        estado_civil_2019["Estado Civil"] = estado_civil_2019["Estado Civil"].astype(int).map(mapa_estado_civil)
+        estado_civil_2019["Estado Civil"] = estado_civil_2019["Estado Civil"].map(mapa_estado_civil)
         estado_civil_2019["Ano"] = "2019"
 
         # Percentual 2019
@@ -388,7 +503,7 @@ with tabs[0]:
         # Contagem dos dados de 2023
         estado_civil_2023 = df_2023["TP_ESTADO_CIVIL"].value_counts().reset_index()
         estado_civil_2023.columns = ["Estado Civil", "Quantidade"]
-        estado_civil_2023["Estado Civil"] = estado_civil_2023["Estado Civil"].astype(int).map(mapa_estado_civil)
+        estado_civil_2023["Estado Civil"] = estado_civil_2023["Estado Civil"].map(mapa_estado_civil)
         estado_civil_2023["Ano"] = "2023"
 
         #Percentual 2023
@@ -437,7 +552,7 @@ with tabs[0]:
         # Contagem dos dados de 2019
         cor_raca_2019 = df_2019["TP_COR_RACA"].value_counts().reset_index()
         cor_raca_2019.columns = ["Cor Raça", "Quantidade"]
-        cor_raca_2019["Cor Raça"] = cor_raca_2019["Cor Raça"].astype(int).map(mapa_cor_raca)
+        cor_raca_2019["Cor Raça"] = cor_raca_2019["Cor Raça"].map(mapa_cor_raca)
         cor_raca_2019["Ano"] = "2019"
 
         # Percentual 2019
@@ -447,7 +562,7 @@ with tabs[0]:
         # Contagem dos dados de 2023
         cor_raca_2023 = df_2023["TP_COR_RACA"].value_counts().reset_index()
         cor_raca_2023.columns = ["Cor Raça", "Quantidade"]
-        cor_raca_2023["Cor Raça"] = cor_raca_2023["Cor Raça"].astype(int).map(mapa_cor_raca)
+        cor_raca_2023["Cor Raça"] = cor_raca_2023["Cor Raça"].map(mapa_cor_raca)
         cor_raca_2023["Ano"] = "2023"
 
         # Percentual 2023
@@ -1251,8 +1366,8 @@ with tabs[2]:
     # -=-=-=-=-=-=-=-=-=-=-=-=-
     # Automóveis e Motos
     # -=-=-=-=-=-=-=-=-=-=-=-=-
-    with st.expander("Automóveis e Motos"):
-        st.subheader("Posse de Automóveis e Motos")
+    with st.expander("Automóveis"):
+        st.subheader("Posse de Carro e Motos")
 
         # Mapeamento de respostas
         mapa_veiculos = {
@@ -1271,12 +1386,16 @@ with tabs[2]:
         carro_2019["Resposta"] = carro_2019["Resposta"].astype(str).map(mapa_veiculos)
         carro_2019["Ano"] = "2019"
         carro_2019["Tipo"] = "Carro"
+        total_carro_2019 = carro_2019["Quantidade"].sum()
+        carro_2019["Percentual"] = (carro_2019["Quantidade"] / total_carro_2019 * 100).round(1)
 
         carro_2023 = df_2023["Q010"].value_counts().reset_index()
         carro_2023.columns = ["Resposta", "Quantidade"]
         carro_2023["Resposta"] = carro_2023["Resposta"].astype(str).map(mapa_veiculos)
         carro_2023["Ano"] = "2023"
         carro_2023["Tipo"] = "Carro"
+        total_carro_2023 = carro_2023["Quantidade"].sum()
+        carro_2023["Percentual"] = (carro_2023["Quantidade"] / total_carro_2023 * 100).round(1)
 
         # -=-=-=-=-=-=-=-=-=-=-=
         # Motos
@@ -1286,14 +1405,22 @@ with tabs[2]:
         moto_2019["Resposta"] = moto_2019["Resposta"].astype(str).map(mapa_veiculos)
         moto_2019["Ano"] = "2019"
         moto_2019["Tipo"] = "Moto"
+        total_moto_2019 = moto_2019["Quantidade"].sum()
+        moto_2019["Percentual"] = (moto_2019["Quantidade"] / total_moto_2019 * 100).round(1)
 
         moto_2023 = df_2023["Q012"].value_counts().reset_index()
         moto_2023.columns = ["Resposta", "Quantidade"]
         moto_2023["Resposta"] = moto_2023["Resposta"].astype(str).map(mapa_veiculos)
         moto_2023["Ano"] = "2023"
         moto_2023["Tipo"] = "Moto"
+        total_moto_2023 = moto_2023["Quantidade"].sum()
+        moto_2023["Percentual"] = (moto_2023["Quantidade"] / total_moto_2023 * 100).round(1)
 
         contagem_veiculos = pd.concat([carro_2019, carro_2023, moto_2019, moto_2023])
+
+        # Texto com quantidade e percentual
+        contagem_veiculos["Total"] = contagem_veiculos["Quantidade"].astype(str) + "(" + contagem_veiculos[
+            "Percentual"].astype(str) + "%)"
 
         grafico_veiculos = px.bar(
             contagem_veiculos,
@@ -1513,33 +1640,22 @@ with tabs[3]:
         # Por ESTADO CIVIL
         # -=-=-=-=-=-=-=-=-
         with abas[1]:
-                st.subheader("Por Estado Civil")
-                df["Estado Civil"] = df["TP_ESTADO_CIVIL"].map(mapa_estado_civil)
+            st.subheader("Por Estado Civil")
+            df["Estado Civil"] = df["TP_ESTADO_CIVIL"].map(mapa_estado_civil)
 
-                medias = df.groupby("Estado Civil")[notas].mean().reset_index()
-                dados = medias.melt(id_vars="Estado Civil", var_name="Área", value_name="Média")
-                dados["Área"] = dados["Área"].map(mapa_areas)
+            medias = df.groupby("Estado Civil")[notas].mean().reset_index()
+            dados = medias.melt(id_vars="Estado Civil", var_name="Área", value_name="Média")
+            dados["Área"] = dados["Área"].map(mapa_areas)
 
-                estado_civil_grafico = px.bar(
-                    dados,
-                    x="Área",
-                    y="Média",
-                    color="Estado Civil",
-                    barmode="group",
-                    text_auto=".1f"
-                )
-                st.plotly_chart(estado_civil_grafico, use_container_width=True)
-
-                dados_estado_civil_box = df.melt(id_vars="Estado Civil", value_vars=notas, var_name="Área",
-                                                 value_name="Nota")
-                dados_estado_civil_box["Área"] = dados_estado_civil_box["Área"].map(mapa_areas)
-                estado_civil_box = px.box(
-                    dados_estado_civil_box,
-                    x="Área",
-                    y="Nota",
-                    color="Estado Civil"
-                )
-                st.plotly_chart(estado_civil_box, use_container_width=True)
+            estado_civil_grafico = px.bar(
+                dados,
+                x="Área",
+                y="Média",
+                color="Estado Civil",
+                barmode="group",
+                text_auto=".1f"
+            )
+            st.plotly_chart(estado_civil_grafico, use_container_width=True, key="estado_civil_grafico")
 
         # -=-=-=-=-=-=-=-=-
         # Por IDADE
@@ -1595,7 +1711,7 @@ with tabs[3]:
                 dados_box,
                 x="Área",
                 y="Nota",
-                color="Renda"
+                color="Renda",
             )
             st.plotly_chart(fig_box, use_container_width=True)
 
@@ -1613,7 +1729,7 @@ with tabs[3]:
 
         # Adiciona as colunas mapeadas
         df["Classe Social"] = df["Q006"].map(mapa_renda)
-        df["Tipo de Escola"] = df["TP_ESCOLA"].map(mapa_adm)
+        df["Tipo de Escola"] = df["TP_DEPENDENCIA_ADM_ESC"].map(mapa_adm)
 
         # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         # Gráficos de Pizza por Classe Social
