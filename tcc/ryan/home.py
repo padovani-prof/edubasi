@@ -33,7 +33,7 @@ df_filtrado = df_final[df_final["ANO"].isin(anos)]
 # GERAL
 # -=-=-=-=-=-=-=-=-=-=--=-=-=-
 with st.sidebar.expander("Geral"):
-    
+
     incluir_alunos_sem_escola = st.checkbox("Incluir alunos sem escola", True)
     if not incluir_alunos_sem_escola:
         if "CO_MUNICIPIO_ESC" in df_filtrado.columns:
