@@ -3,6 +3,7 @@ from importlib.resources import contents
 import streamlit as st
 import pandas as pd
 import funcao_social as fs
+from fontTools.cffLib import FDSelect
 from streamlit import sidebar
 import edubasi
 
@@ -42,17 +43,17 @@ def pagina_enem_social():
                 default=edubasi.obter_anos_selecionados(),
                 placeholder="Selecione ao menos um ano"
             )
-            if st.button("Atualizar"):
-                if len(anos) == 0:
-                    st.warning("Escolha, pelo menos, um ano de análise.")
-                else:
-                    edubasi.selecionar_anos(anos)
-            aux = []
-            for ano in edubasi.obter_anos_selecionados():
-                df = edubasi.obter_dados(ano=ano, id_municipio=edubasi.obter_municipio_selecionado())
-                aux.append(df)
-            df_original = pd.concat(aux, ignore_index=True, sort=False)
-            cont = len(df_original)
+
+            if not anos:
+                st.warning("Escolha, pelo menos, um ano de análise.")
+            else:
+                #edubasi.selecionar_anos(anos)
+                aux = []
+                for ano in anos:
+                    df = edubasi.obter_dados(ano=ano, id_municipio=edubasi.obter_municipio_selecionado())
+                    aux.append(df)
+                df_original = pd.concat(aux, ignore_index=True, sort=False)
+                cont = len(df_original)
 #=====================================================================================================
 
             resp = st.checkbox('Incluir estudantes sem informação de escola', value=True)
@@ -80,9 +81,9 @@ def pagina_enem_social():
             map_est_civil = {
                 'Não informado':'0',
                 'Solteiro(a)':'1',
-                             'Casado(a)/Mora com companheiro(a)':'2',
-                             'Divorciado(a)/Desquitado(a)/Separado(a)':'3',
-                             'Viúvo(a)':'4'}
+                'Casado(a)/Mora com companheiro(a)':'2',
+                'Divorciado(a)/Desquitado(a)/Separado(a)':'3',
+                'Viúvo(a)':'4'}
 
             df = fs.filtro_multiselect(df, est_civil, map_est_civil, 'TP_ESTADO_CIVIL')
 
@@ -152,43 +153,44 @@ def pagina_enem_social():
                 "Selecione a renda familiar:",
                 [
                     "Nenhuma renda.",
-                    "Até R$ 954,00.",
-                    "De R$ 954,01 até R$ 1.431,00.",
-                    "De R$ 1.431,01 até R$ 1.908,00.",
-                    "De R$ 1.908,01 até R$ 2.385,00.",
-                    "De R$ 2.385,01 até R$ 2.862,00.",
-                    "De R$ 2.862,01 até R$ 3.816,00.",
-                    "De R$ 3.816,01 até R$ 4.770,00.",
-                    "De R$ 4.770,01 até R$ 5.724,00.",
-                    "De R$ 5.724,01 até R$ 6.678,00.",
-                    "De R$ 6.678,01 até R$ 7.632,00.",
-                    "De R$ 7.632,01 até R$ 8.586,00.",
-                    "De R$ 8.586,01 até R$ 9.540,00.",
-                    "De R$ 9.540,01 até R$ 11.448,00.",
-                    "De R$ 11.448,01 até R$ 14.310,00.",
-                    "De R$ 14.310,01 até R$ 19.080,00.",
-                    "Mais de R$ 19.080,00."
+                    "Até 1 salário minímo.",
+                    "De 1  até 1 salário minímo e meio.",
+                    "De 1,5 até 2 salários minímo.",
+                    "De 2 até 2 salários minímo e meio",
+                    "De 2,5 até  3 salários minímo.",
+                    "De 3 até 4 salários minímo.",
+                    "De 4 até 5 salários minímo.",
+                    "De 5 até 6 salários minímo.",
+                    "De 6 até 7 salários minímo.",
+                    "De 7 até 8 salários minímo.",
+                    "De 8 até 9 salários minímo.",
+                    "De 9 até 10 salários minímo.",
+                    "De 10 até 12 salários minímo.",
+                    "De 12 até 15 salários minímo.",
+                    "De 15 até 20 salários minímo.",
+                    "Mais de 20 salários minímo."
                 ],
                 placeholder="Selecione uma renda familiar"
             )
+
             map_renda_familiar = {
                 "Nenhuma renda.": "A",
-                "Até R$ 954,00.": "B",
-                "De R$ 954,01 até R$ 1.431,00.": "C",
-                "De R$ 1.431,01 até R$ 1.908,00.": "D",
-                "De R$ 1.908,01 até R$ 2.385,00.": "E",
-                "De R$ 2.385,01 até R$ 2.862,00.": "F",
-                "De R$ 2.862,01 até R$ 3.816,00.": "G",
-                "De R$ 3.816,01 até R$ 4.770,00.": "H",
-                "De R$ 4.770,01 até R$ 5.724,00.": "I",
-                "De R$ 5.724,01 até R$ 6.678,00.": "J",
-                "De R$ 6.678,01 até R$ 7.632,00.": "K",
-                "De R$ 7.632,01 até R$ 8.586,00.": "L",
-                "De R$ 8.586,01 até R$ 9.540,00.": "M",
-                "De R$ 9.540,01 até R$ 11.448,00.": "N",
-                "De R$ 11.448,01 até R$ 14.310,00.": "O",
-                "De R$ 14.310,01 até R$ 19.080,00.": "P",
-                "Mais de R$ 19.080,00.": "Q"
+                "Até 1 salário minímo.": "B",
+                "De 1  até 1 salário minímo e meio.": "C",
+                "De 1,5 até 2 salários minímo.": "D",
+                "De 2 até 2 salários minímo e meio": "E",
+                "De 2,5 até  3 salários minímo.": "F",
+                "De 3 até 4 salários minímo.": "G",
+                "De 4 até 5 salários minímo.": "H",
+                "De 5 até 6 salários minímo.": "I",
+                "De 6 até 7 salários minímo.": "J",
+                "De 7 até 8 salários minímo.": "K",
+                "De 8 até 9 salários minímo.": "L",
+                "De 9 até 10 salários minímo.": "M",
+                "De 10 até 12 salários minímo.": "N",
+                "De 12 até 15 salários minímo.": "O",
+                "De 15 até 20 salários minímo.": "P",
+                "Mais de 20 salários minímo.": "Q"
             }
             df = fs.filtro_multiselect(df, renda_familiar, map_renda_familiar, 'Q006')
 
@@ -443,23 +445,30 @@ def pagina_enem_social():
                 placeholder="Selecione o tipo de situação"
             )
             df = fs.filtro_multiselect(df, redacao, map_redacao, 'TP_STATUS_REDACAO')
-    st.metric('Quantidade de registros', value=str(cont), border=False)
-    st.write(df)
+#==================================================================================================
+    #cont = len(df)
+    #st.metric('Quantidade de registros', value=str(cont), border=False)
+    #st.write(df)
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['GERAL',
-                                                        'DADOS ESCOLARES',
-                                                        'DADOS DA PROVA ',
-                                                        'DADOS SOBRE ELETRO-DOMESTICO',
-                                                        'DADOS SOBRE VEICULOS',
-                                                        'DADOS SOBRE A MORADIA',
-                                                        'DADOS SOBRE APARELHOS DIGITAIS E INTERNET']
-                                                       )
-
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs(
+        [
+        'GERAL',
+        'ESTUDANTE',
+        'DADOS ESCOLARES',
+        'RENDA',
+        'DADOS DA PROVA ',
+        'DADOS SOBRE ELETRO-DOMESTICO',
+        'MORADIA E BENS',
+        'TECNOLOGIA',
+        'QUESTIONÁRIO'
+    ]
+    )
+#==================================================================================================
     with tab1:
 
         col2, col3 = st.columns(2)
-        cont1 = len(fs.filtro_prova_treino(df_original,False))
-        cont2 = len(fs.filtro_prova_treino(df_original, '1'))
+        cont1 = len(fs.filtro_prova_treino(df,False))
+        cont2 = len(fs.filtro_prova_treino(df, '1'))
         col2.metric('Regulares',value = str(cont1),border=True)
         col3.metric('Treneiros',value=str(cont2), border=True)
         #st.write(df)
@@ -467,290 +476,609 @@ def pagina_enem_social():
         barra = fs.grafico_barra(
             df,
             "NU_ANO",
-            "Ano",
+            "NU_ANOS",
             "Quantidade",
             "Anos",
-            "v"
+            False,
         )
 
     with tab2:
-        # ============ tipo de depedencia ===========================
-        col1, col2 = st.columns(2)
-        with col1:
-            map = {
-                None: 'Não informado',
-                '1': "Federal",
-                '2': "Estadual",
-                '3': "Municipal",
-                '4': "Privada"
-            }
-            pizza1 = fs.grafico_pizza(df,
-                                      "TP_DEPENDENCIA_ADM_ESC",
-                                      "Tipo de dependência",
-                                      "Quantidade",
-                                      'Tipo de dependência',
-                                      map)
-        # ============ Tipo de ensino ================================
-        with col2:
-            map = {
-                None: 'Não informada',
-                '1': 'Urbana',
-                '2': 'Rural'
-            }
-            pizza2 = fs.grafico_pizza(
-                df,
-                'TP_LOCALIZACAO_ESC',
-                'Tipo de zona',
-                'Quantidade',
-                'Tipos de Zonas',
-                map)
-        # =========== zona territorial ==============================
 
-        map = {
-            None : 'Não informado',
-            '1': "Ensino Regular",
-            '2': "Educação Especial - Modalidade Substitutiva",
-            '3': "Educação de Jovens e Adultos"
-        }
-        barra1 = fs.grafico_barra(
-            df,
-            'TP_ENSINO',
-            'tipo de ensino',
-            'Quantidade',
-            'Tipo de ensino',
-            'v',
-            map)
+        with st.expander('Informações sobre sexo'):
+            col1, col2 = st.columns(2)
+            with col1:
+                map_sexo = {
+                    'M':"Masculino",
+                    'F':"Feminino"
+                }
+
+                pizza0 = fs.grafico_pizza(
+                    df,
+                    'TP_SEXO',
+                    'Sexualidade',
+                    'Quantidade',
+                    'Percentual de inscritos por sexo em todos os anos',
+                    map_sexo
+                )
+                #===================================================================
+            with col2:
+                pass
+                df_filtrado = fs.multi(df,'NU_ANO','TP_SEXO')
+                multi_tab_sexo = fs.grafico_renda(df_filtrado,'NU_ANO', 'quantidade', 'TP_SEXO' )
+
+        with st.expander('Informações sobre estado civil'):
+            col1, col2 = st.columns(2)
+            with col1:
+                map_estado_civil= {
+                    '0':'Não informado',
+                    '1':'Solteiro(a)',
+                    '2':'Casado(a) / Mora com companheiro(a)',
+                    '3':'Divorciado(a) / Desquitado(a) / Separado(a)',
+                    '4':'Viúvo(a)'
+                }
+                pizza = fs.grafico_pizza(
+                    df,
+                    'TP_ESTADO_CIVIL',
+                    'Estado Civil ',
+                    'Quantidade',
+                    'Estado Civil em todos os anos',
+                    map_estado_civil
+                )
+            with col2:
+                df_filtrado = fs.multi(df,'NU_ANO','TP_ESTADO_CIVIL')
+                multi_tab_estado = fs.grafico_renda(df_filtrado,'NU_ANO', 'quantidade', 'TP_ESTADO_CIVIL' )
+    #===================================================================
+        with st.expander('Informações sobre cor/raça'):
+            col1, col2 = st.columns(2)
+            with col1:
+                map_cores = {
+                    '0': "Não declarado",
+                    '1': "Branca",
+                    '2': "Preta",
+                    '3': "Parda",
+                    '4': "Amarela",
+                    '5': "Indígena"
+                }
+
+                pizza10 = fs.grafico_pizza(
+                    df,
+                    'TP_COR_RACA',
+                    'Cor/Raça',
+                    'quantidade',
+                    'Cor/Raça em todos os anos',
+                    map_cores
+                )
+            with col2:
+                df_filtrado = fs.multi(df,'NU_ANO','TP_COR_RACA')
+                multi_tab_cores = fs.grafico_renda(df_filtrado,'NU_ANO', 'quantidade', 'TP_COR_RACA' )
+
+        with st.expander('informações sobre faixa etária'):
+            col1, col2 = st.columns(2)
+            with col1:
+                map_faixa = {
+                    '1': "Menor de 17 anos",
+                    '2': "17 anos",
+                    '3': "18 anos",
+                    '4': "19 anos",
+                    '5': "20 anos",
+                    '6': "21 anos",
+                    '7': "22 anos",
+                    '8': "23 anos",
+                    '9': "24 anos",
+                    '10': "25 anos",
+                    '11': "Entre 26 e 30 anos",
+                    '12': "Entre 31 e 35 anos",
+                    '13': "Entre 36 e 40 anos",
+                    '14': "Entre 41 e 45 anos",
+                    '15': "Entre 46 e 50 anos",
+                    '16': "Entre 51 e 55 anos",
+                    '17': "Entre 56 e 60 anos",
+                    '18': "Entre 61 e 65 anos",
+                    '19': "Entre 66 e 70 anos",
+                    '20': "Maior de 70 anos"
+                }
+
+                catego = [
+                    "Menor de 17 anos",
+                    "17 anos",
+                    "18 anos",
+                    "19 anos",
+                    "20 anos",
+                    "21 anos",
+                    "22 anos",
+                    "23 anos",
+                    "24 anos",
+                    "25 anos",
+                    "Entre 26 e 30 anos",
+                    "Entre 31 e 35 anos",
+                    "Entre 36 e 40 anos",
+                    "Entre 41 e 45 anos",
+                    "Entre 46 e 50 anos",
+                    "Entre 51 e 55 anos",
+                    "Entre 56 e 60 anos",
+                    "Entre 61 e 65 anos",
+                    "Entre 66 e 70 anos",
+                    "Maior de 70 anos"
+                ]
+
+                pizza11 = fs.grafico_pizza(
+                    df,
+                    'TP_FAIXA_ETARIA',
+                    'Faixa etária',
+                    'quantidade',
+                    'Faixa etária em todos os anos',
+                    map_faixa,
+                    None,
+                    catego
+
+                )
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'TP_FAIXA_ETARIA')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'TP_FAIXA_ETARIA',catego,None, True, )
 
     with tab3:
-        # =========== lingua estrangeira ============================
-        map = {
-            '0': "Inglês",
-            '1': "Espanhol"
-        }
-        barra2 = fs.grafico_barra(
-            df,
-            'TP_LINGUA',
-            'tipo de lingua',
-            'Quantidade',
-            'Tipo de linguagem estrangeira escolhida',
-            'v',
-            map)
+        # ============ tipo de depedencia ===========================
 
-        # =========== prova treino ou não =========================
-        map = {
-            '1': 'Realizando prova para treino',
-            '0': 'Prova valendo pontuação'
-        }
-        pizza3 = fs.grafico_pizza(
-            df,
-            'IN_TREINEIRO',
-            'Qual modalidade',
-            'Quantidade',
-            'Tipo de Modalidade de Prova',
-            map)
+        with st.expander("Distribuição por administração"):
+            col1, col2 = st.columns(2)
+            with col1:
+                map = {
+                    None: 'Não informado',
+                    '1': "Federal",
+                    '2': "Estadual",
+                    '3': "Municipal",
+                    '4': "Privada"
+                }
+                pizza1 = fs.grafico_pizza(df,
+                                          "TP_DEPENDENCIA_ADM_ESC",
+                                          "Tipo de dependência",
+                                          "Quantidade",
+                                          'Tipo de dependência em todos os anos',
+                                          map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'TP_DEPENDENCIA_ADM_ESC')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'TP_DEPENDENCIA_ADM_ESC')
+        # =========== zona territorial ==============================
+        with st.expander('Distribuição por localidade'):
+            col1, col2 = st.columns(2)
+            with col1:
+                map = {
+                    None: 'Não informada',
+                    '1': 'Urbana',
+                    '2': 'Rural'
+                }
+                pizza2 = fs.grafico_pizza(
+                    df,
+                    'TP_LOCALIZACAO_ESC',
+                    'Tipo de zona',
+                    'Quantidade',
+                    'Tipos de Zonas em todos os anos',
+                    map,
+                )
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'TP_LOCALIZACAO_ESC')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'TP_LOCALIZACAO_ESC')
+        # ============ Tipo de ensino ================================
+        with st.expander('Distribuição por tipo de ensino'):
+            col1, col2 = st.columns(2)
+            with col1:
+                map = {
+                    None : 'Não informado',
+                    '1': "Ensino Regular",
+                    '2': "Educação Especial - Modalidade Substitutiva",
+                    '3': "Educação de Jovens e Adultos"
+                }
+                PIZZA = fs.grafico_pizza(
+                    df,
+                    'TP_ENSINO',
+                    'tipo de ensino',
+                    'Quantidade',
+                    'Tipo de ensino em todos os anos',
+                    map
+                )
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'TP_ENSINO')
+                multi_tab_ensino = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'TP_ENSINO' )
 
     with tab4:
-        # ======== maquina de lavar ================================
-        map = {
-            "A": "Nenhuma.",
-            "B": "Uma.",
-            "C": "Duas.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
-        }
-        barra8 = fs.grafico_barra(
-            df,
-            'Q014',
-            'possui quantas maquinas de lavar?',
-            'Quantidade de respostas',
-            'Possuem maquinas de lavar roupa',
-            'h',
-            map)
 
-        # ======== micro-ondas ======================================
-        map = {
-            "A": "Nenhum.",
-            "B": "Um.",
-            "C": "Dois.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
+        # mapeamento de faixas de renda
+        map_FR = {
+            "A": "Nenhuma renda.",
+            "B": "Até 1 salário minímo.",
+            "C": "De 1  até 1 salário minímo e meio.",
+            "D": "De 1,5 até 2 salários minímo.",
+            "E": "De 2 até 2 salários minímo e meio",
+            "F": "De 2,5 até  3 salários minímo.",
+            "G": "De 3 até 4 salários minímo.",
+            "H": "De 4 até 5 salários minímo.",
+            "I": "De 5 até 6 salários minímo.",
+            "J": "De 6 até 7 salários minímo.",
+            "K": "De 7 até 8 salários minímo.",
+            "L": "De 8 até 9 salários minímo.",
+            "M": "De 9 até 10 salários minímo.",
+            "N": "De 10 até 12 salários minímo.",
+            "O": "De 12 até 15 salários minímo.",
+            "P": "De 15 até 20 salários minímo.",
+            "Q": "Mais de 20 salários minímo."
         }
-        pizza5 = fs.grafico_pizza(
-            df,
-            "Q016",
-            'Quantos micro-ondas possui?',
-            'Quantidade de respostas',
-            'Possuem Micro-ondas',
-            map)
 
-        # ========= televisão =======================================
-        map = {
-            "A": "Nenhuma.",
-            "B": "Uma.",
-            "C": "Duas.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
-        }
-        pizza6 = fs.grafico_pizza(
-            df,
-            'Q019',
-            'Possui quntas televisão de cor?',
-            'Quantidade de respostas',
-            'Possuem televisão de cor',
-            map)
+        df['Q006'] = df['Q006'].map(map_FR)
+        #st.write(df['Q006'])
+        with st.expander('Distribuição por renda'):
+
+
+            teste = fs.multi(df,'NU_ANO','Q006')
+            tab16 = fs.grafico_teste(teste)
+
+        with st.expander('Distribuição por classe social'):
+            col1, col2 = st.columns(2)
+            with col1:
+
+                df_teste = df.copy()
+                df_tratado = fs.classes(df_teste)
+                teste = fs.multi(df_tratado, 'NU_ANO', 'Q006')
+
+                #st.write(teste)
+
+                pizza10 = fs.grafico_pizza(
+                    df_tratado,
+                    'Q006',
+                    'Q006',
+                    'quantidade',
+                    'Percentuais gerais em todos os anos',
+                )
+
+            with col2:
+                tab20 = fs.grafico_renda(teste,'NU_ANO','quantidade','Q006', None, True)
+
+        with st.expander('Distribuição de renda por cor/raça'):
+
+            df_tratado2 = fs.multi(df,'TP_COR_RACA','Q006')
+            #st.write(df_tratado2)
+            tab20 = fs.grafico_relative(df_tratado2, 'TP_COR_RACA', 'percentual', 'Q006', 'Percentuais por cor/raça em todos os anos')
+
+        with st.expander('Distribuição de renda por estado civil'):
+
+            df_tratado = fs.multi(df,'TP_ESTADO_CIVIL', 'Q006')
+            tab21 = fs.grafico_relative(df_tratado, 'TP_ESTADO_CIVIL', 'percentual', 'Q006', 'Percentuais por estado civil em todos os anos')
+
+        with st.expander('Distribuição de renda por idade'):
+
+            df_tratado = fs.multi(df,'TP_FAIXA_ETARIA', 'Q006')
+            tab22 = fs.grafico_relative(df_tratado,'TP_FAIXA_ETARIA', 'percentual', 'Q006', 'Percentuais por idade em todos os anos')
+
+        with st.expander('Distribuição de renda por administração da escola'):
+
+            df_tratado = fs.multi(df,'TP_DEPENDENCIA_ADM_ESC', 'Q006')
+            tab22 = fs.grafico_relative(df_tratado, 'TP_DEPENDENCIA_ADM_ESC', 'percentual', 'Q006', 'Percentuais por administração escolar em todos os anos')
+
+        with st.expander('Distribuição de renda por localidade'):
+
+            df_tratado = fs.multi(df,'TP_LOCALIZACAO_ESC', 'Q006')
+            tab22 = fs.grafico_relative(df_tratado, 'TP_LOCALIZACAO_ESC', 'percentual', 'Q006','Percentuais por localidade em todos os anos')
+
+        with st.expander('Distribuição de renda por tipo de ensino'):
+
+            df_tratado = fs.multi(df, 'TP_ENSINO', 'Q006')
+            tab22 = fs.grafico_relative(df_tratado, 'TP_ENSINO', 'percentual', 'Q006','Percentuais por tipo de ensino em todos os anos')
 
     with tab5:
-        # ======== automovel moto =================================
-        map = {
-            "A": "Nenhuma.",
-            "B": "Uma.",
-            "C": "Duas.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
-        }
-        barra7 = fs.grafico_barra(
-            df,
-            'Q011',
-            'Possui quantas motos?',
-            'Quantidade de respostas',
-            'Possuem Moto',
-            'h',
-            map)
-
-        # ========== automovel carro ==============================
-        map = {
-            "A": "Não.",
-            "B": "Sim, um.",
-            "C": "Sim, dois.",
-            "D": "Sim, três.",
-            "E": "Sim, quatro ou mais."
-        }
-        barra6 = fs.grafico_barra(
-            df,
-            'Q010',
-            'Possui quantos carros?',
-            'Quantidade de respostas',
-            'Possuem Carro',
-            'h',
-            map)
-
+        pass
     with tab6:
-        # =========== empregada domestica ===========================
-        map = {
-            "A": "Não.",
-            "B": "Sim, um ou dois dias por semana.",
-            "C": "Sim, três ou quatro dias por semana.",
-            "D": "Sim, pelo menos cinco dias por semana."
-        }
-        barra3 = fs.grafico_barra(
-            df,
-            'Q007',
-            'Possui empregada domestica?',
-            'Quantidade de respostas',
-            'Possue Empregada',
-            'v',
-            map)
-
-        # ========== possui banheiro ===============================
-        map = {
-            "A": "Nenhuma.",
-            "B": "Uma.",
-            "C": "Duas.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
-        }
-        barra4 = fs.grafico_barra(
-            df,
-            'Q008',
-            'Possui quantos banheiro?',
-            'Quantidade de respostas',
-            'Possuem Banheiro',
-            'h',
-            map)
-
-        # ========== quartos ======================================
-        map = {
-            "A": "Nenhuma.",
-            "B": "Uma.",
-            "C": "Duas.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
-        }
-        barra5 = fs.grafico_barra(
-            df,
-            'Q009',
-            'Possui quantos quartos?',
-            'Quantidade de respostas',
-            'Possui quantos quartos na casa ',
-            'h',
-            map)
+        with st.expander('Micro-ondas'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ======== micro-ondas ======================================
+                map = {
+                    "A": "Nenhum.",
+                    "B": "Um.",
+                    "C": "Dois.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                pizza5 = fs.grafico_pizza(
+                    df,
+                    "Q016",
+                    'Quantos micro-ondas possui?',
+                    'Quantidade de respostas',
+                    'Possuem Micro-ondas em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO','Q016')
+                multi_tab_generico = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q016')
+        with st.expander('Maquina de lavar roupa'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ======== maquina de lavar ================================
+                map = {
+                    "A": "Nenhuma.",
+                    "B": "Uma.",
+                    "C": "Duas.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                barra8 = fs.grafico_pizza(
+                    df,
+                    'Q014',
+                    'possui quantas maquinas de lavar?',
+                    'Quantidade de respostas',
+                    'Possuem maquinas de lavar roupa em todos os anos',
+                    map
+                )
+            with col2:
+                catego = [
+                    'Duas.',
+                    'Nenhuma.',
+                    'Quatro ou mais.',
+                    'Três.',
+                    'Uma.',
+                ]
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q014')
+                multi_tab_generico = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q014', catego)
+        with st.expander('Televisão'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ========= televisão =======================================
+                map = {
+                    "A": "Nenhuma.",
+                    "B": "Uma.",
+                    "C": "Duas.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                pizza6 = fs.grafico_pizza(
+                    df,
+                    'Q019',
+                    'Possui quntas televisão de cor?',
+                    'Quantidade de respostas',
+                    'Possuem televisão de cor em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q019')
+                multi_tab_generico = fs.grafico_renda(df_filtrado,'NU_ANO', 'quantidade', 'Q019')
 
     with tab7:
+
+        with st.expander('Empregado(a) doméstico(a)'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # =========== empregada domestica ===========================
+                map = {
+                    "A": "Não.",
+                    "B": "Sim, um ou dois dias por semana.",
+                    "C": "Sim, três ou quatro dias por semana.",
+                    "D": "Sim, pelo menos cinco dias por semana."
+                }
+                barra3 = fs.grafico_pizza(
+                    df,
+                    'Q007',
+                    'Possui empregada domestica?',
+                    'Quantidade de respostas',
+                    'Possue Empregada em todos os anos',
+                    map,
+                )
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q007')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q007')
+        with st.expander('Banheiro'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ========== possui banheiro ===============================
+                map = {
+                    "A": "Nenhuma.",
+                    "B": "Uma.",
+                    "C": "Duas.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                barra4 = fs.grafico_pizza(
+                    df,
+                    'Q008',
+                    'Possui quantos banheiro?',
+                    'Quantidade de respostas',
+                    'Possuem Banheiro em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q008')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q008')
+        with st.expander('Quartos'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ========== quartos ======================================
+                map = {
+                    "A": "Nenhuma.",
+                    "B": "Uma.",
+                    "C": "Duas.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                barra5 = fs.grafico_pizza(
+                    df,
+                    'Q009',
+                    'Possui quantos quartos?',
+                    'Quantidade de respostas',
+                    'Possui quantos quartos na casa em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q009')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q009')
+        with st.expander('Motos'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ======== automovel moto =================================
+                map = {
+                    "A": "Nenhuma.",
+                    "B": "Uma.",
+                    "C": "Duas.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                barra7 = fs.grafico_pizza(
+                    df,
+                    'Q011',
+                    'Possui quantas motos?',
+                    'Quantidade de respostas',
+                    'Possuem Moto em todos os anos',
+                    map,
+                )
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q011')
+                multi_tab_generico = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q011')
+        with st.expander('Carros'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ========== automovel carro ==============================
+                map = {
+                    "A": "Não.",
+                    "B": "Sim, um.",
+                    "C": "Sim, dois.",
+                    "D": "Sim, três.",
+                    "E": "Sim, quatro ou mais."
+                }
+                barra6 = fs.grafico_pizza(
+                    df,
+                    'Q010',
+                    'Possui quantos carros?',
+                    'Quantidade de respostas',
+                    'Possuem Carro em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q010')
+                multi_tab_generico = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q010')
+        with st.expander('Carro e moto'):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ================== ambos os automoveis =====================
+                tab = fs.colunas_cruzadas(df, 'Q010', 'Q011')
+                #st.write(tab)
+                map = {
+                    "A": "Não possui nenhum",
+                    "B": "Possui Carro",
+                    "C": "Possui moto",
+                    "D": 'Possui Ambos'
+                }
+
+                barra9 = fs.grafico_pizza(
+                    tab,
+                    'Veiculos',
+                    'Possui ambos ou somente um veiculo',
+                    'Quantidade de respostas',
+                    'Possui ambos ou somente um veiculo de trasnporte(Carro e moto) em todos os anos',
+                    map,
+                )
+            with col2:
+                df_filtrado = fs.multi(tab, 'ANOS', 'Veiculos')
+                multi_tab_generico = fs.grafico_renda(df_filtrado, 'ANOS', 'quantidade', 'Veiculos')
+
+    with tab8:
         # ============ internet ====================================
-        map = {
-            'A': 'Não.',
-            'B': 'Sim.'
-        }
-        pizza4 = fs.grafico_pizza(
-            df,
-            'Q025',
-            'Possui internet?',
-            'Quantidades de respostas',
-            'Possuem Internet',
-            map)
-        # =========  celular ========================================
-        map = {
-            "A": "Nenhuma.",
-            "B": "Uma.",
-            "C": "Duas.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
-        }
-        barra9 = fs.grafico_barra(
-            df,
-            'Q022',
-            'Possui qunatos celulares?',
-            'Quantidades de respostas',
-            'Possuem Celular',
-            'h',
-            map)
-        # ========= computador ======================================
-        map = {
-            "A": "Nenhuma.",
-            "B": "Uma.",
-            "C": "Duas.",
-            "D": "Três.",
-            "E": "Quatro ou mais."
-        }
-        pizza7 = fs.grafico_pizza(
-            df,
-            'Q024',
-            'Possui quantos computadores',
-            'Quantidade de respostas',
-            'Possuem Computador',
-            map)
+        with st.expander("Acessor à internet"):
+            col1, col2 = st.columns(2)
+            with col1:
+                map = {
+                    'A': 'Não.',
+                    'B': 'Sim.'
+                }
+                pizza4 = fs.grafico_pizza(
+                    df,
+                    'Q025',
+                    'Possui internet?',
+                    'Quantidades de respostas',
+                    'Possuem Internet em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q025')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q025')
+        with st.expander("Computador em casa"):
+            col1, col2 = st.columns(2)
+            with col1:
+                # ========= computador ======================================
+                map = {
+                    "A": "Nenhuma.",
+                    "B": "Uma.",
+                    "C": "Duas.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                pizza7 = fs.grafico_pizza(
+                    df,
+                    'Q024',
+                    'Possui quantos computadores',
+                    'Quantidade de respostas',
+                    'Possuem Computador em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q024')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q024')
+        with st.expander("Celular em casa"):
+            col1, col2 = st.columns(2)
+            with col1:
+                # =========  celular ========================================
+                map = {
+                    "A": "Nenhuma.",
+                    "B": "Uma.",
+                    "C": "Duas.",
+                    "D": "Três.",
+                    "E": "Quatro ou mais."
+                }
+                barra9 = fs.grafico_pizza(
+                    df,
+                    'Q022',
+                    'Possui qunatos celulares?',
+                    'Quantidades de respostas',
+                    'Possuem Celular em todos os anos',
+                    map)
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', 'Q022')
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', 'Q022')
+
+    with tab9:
+        #st.write(df)
+        select = st.selectbox(
+            "Escolha uma pergunta do questionário do ENEM",
+            (
+            'Até que série seu pai, ou o homem responsável por você, estudou?',
+            'Até que série sua mãe, ou a mulher responsável por você, estudou?',
+            'A partir da apresentação de algumas ocupações divididas em grupos ordenados, indique o grupo que contempla a ocupação mais próxima da ocupação do seu pai ou do homem responsável por você. (Se ele não estiver trabalhando, escolha uma ocupação pensando no último trabalho dele).',
+            'A partir da apresentação de algumas ocupações divididas em grupos ordenados, indique o grupo que contempla a ocupação mais próxima da ocupação da sua mãe ou da mulher responsável por você. (Se ela não estiver trabalhando, escolha uma ocupação pensando no último trabalho dela).',
+            'Incluindo você, quantas pessoas moram atualmente em sua residência?',
+            'Na sua residência tem geladeira?',
+            'Na sua residência tem freezer (independente ou segunda porta da geladeira)?',
+            'Na sua residência tem máquina de secar roupa (independente ou em conjunto com a máquina de lavar roupa)?',
+            'Na sua residência tem máquina de lavar louça?',
+            'Na sua residência tem aspirador de pó?',
+            'Na sua residência tem aparelho de DVD?',
+            'Na sua residência tem TV por assinatura?',
+            'Na sua residência tem telefone fixo?',
+            'Você já concluiu ou está concluindo o Ensino Médio?',
+            'Em que tipo de escola você frequentou o Ensino Médio?',
+
+                        ),
+            index=None,
+            placeholder="Selecione uma opção..",
+        )
+        if select:
+            st.write("Você selecionou:", select)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                # =========  celular ========================================
+                controle = fs.mapeamento(select)
+
+                barra9 = fs.grafico_pizza(
+                    df,
+                    controle[0],
+                    controle[1],
+                    controle[2],
+                    controle[3],
+                    controle[4],
+                    controle[6]
+                )
+            with col2:
+                df_filtrado = fs.multi(df, 'NU_ANO', controle[0])
+                multi_tab_faixa = fs.grafico_renda(df_filtrado, 'NU_ANO', 'quantidade', controle[0], controle[5], controle[6])
 
 
-
-
-
-'''
-# ================== expander 4 ===================================================
-# =================================================================================
-    # ========= automoveis =====================================TESTE
-
-        map = {
-
-            "A": "Não.",
-            "B": "Sim, um.",
-            "C": "Sim, dois.",
-            "D": "Sim, três.",
-            "E": "Sim, quatro ou mais."
-        }
-
-        automovel = df["Q010"].map(map).value_counts().reset_index()
-        automovel.columns = ['possui_automovel', 'Resposta']
-        #st.write(automovel)
-
-
-'''
+        else:
+            st.write("Nada selecionado")
