@@ -83,11 +83,6 @@ class Filtragem:
 
 
 
-    def filtar_ano(self, anos, df):
-        if (len(anos)>0): 
-            df = df[df['NU_ANO'].isin(anos)]
-        return df
-        
 
 
     def filtro_por_renda(self, df, renda):
@@ -216,13 +211,12 @@ class Filtragem:
             df = df[(df['CO_MUNICIPIO_ESC']==cod_minicipio_selecionado) & (df['CO_MUNICIPIO_PROVA']==cod_minicipio_selecionado)] # analiza os participantes que estudaram e fizeram a prova em uma escola do minicipio selecionado
         return df
 
-    def filtra(self, estado_civil, intervalo_idade, tipo_escola, lingua, sexo, renda, presenca, anos, empregados, lista_celecionada, inter, treineiro, sem_escola, df ):
+    def filtra(self, estado_civil, intervalo_idade, tipo_escola, lingua, sexo, renda, presenca, empregados, lista_celecionada, inter, treineiro, sem_escola, df ):
         
         df = self.filtragem_por_estado_civil(estado_civil, df)
         df = self.filtragem_por_idade(intervalo_idade, df)
         df = self.filtragem_tipo_escola(tipo_escola, df)
         df = self.filtrar_lingua(lingua, df)
-        df = self.filtar_ano(anos, df)
         df = self.filtragem_genero(sexo, df)
         df = self.filtro_por_Pecapita(df, renda)
         df = self.prenca_nas_provas(presenca, df)

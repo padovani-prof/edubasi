@@ -24,11 +24,11 @@ def ordenar_anos(lista_anos):
             
 
 
-def filtra_inicial():
+def filtra_inicial(anos_analizados):
     qtd = 0
     aux = []
     anos = []
-    for ano in edubasi.obter_anos_selecionados():
+    for ano in anos_analizados:
         anos.append(ano)
         df = edubasi.obter_dados(ano = ano, id_municipio = edubasi.obter_municipio_selecionado())
         aux.append(df)
@@ -40,12 +40,9 @@ def filtra_inicial():
 
 def pagina_enem_desempenho():
     edubasi.iniciar_sessao()
-    df, data_anos = filtra_inicial()
 
-    #st.write(df)
+    
 
-
-    data_anos = ordenar_anos(data_anos)
 
     
 
@@ -69,7 +66,8 @@ def pagina_enem_desempenho():
             )
             anos = st.multiselect(
             "Escolha os anos de análise:",
-            data_anos,
+            edubasi.obter_anos(),
+            default=edubasi.obter_anos_selecionados(),
             placeholder="Selecione os anos:",
 
             )
@@ -157,27 +155,32 @@ def pagina_enem_desempenho():
                 ["1º Dia (LC, CH, R)", "2º Dia (MT, CN)"],
                 placeholder="Selecione a presença nas provas:"
             )
+
+
+    data_anos = anos if len(anos) > 0 else edubasi.obter_anos_selecionados()
+    data_anos = ordenar_anos(data_anos)
+    df, data_anos = filtra_inicial(data_anos)
     
-    anos = ordenar_anos(anos)
+
+    
+    
+
+
     ft = Filtragem()
-    df = ft.filtra(estado_civil, intervalo_idade, tipo_escola, lingua, sexo, renda, presenca, anos, empregados,  lista_itens, inter, treineiro, studantes_sem_escola, df)
+    df = ft.filtra(estado_civil, intervalo_idade, tipo_escola, lingua, sexo, renda, presenca, empregados,  lista_itens, inter, treineiro, studantes_sem_escola, df)
     st.title("Pespectiva de Desempenho")
 
     inscritos, presenca, macroanalise = st.tabs(['📝Inscritos', '🙋‍♂️Presença', '🔭Macroanálise'])
 
     with inscritos:
-        #sst.write(df)
-        # st.write(edubasi.obter_municipio_selecionado())
         Incritos(df)
     with presenca:
         Presenca(df)
     with macroanalise:
         macroanalise_questoes, macroanalise_centrais = st.tabs(['❓Macroanálise ➡ Questões', '🔢Macroanálise ➡ Medidas centrais'])
         with macroanalise_questoes:
-            if len(anos) == 0:
-                anos = data_anos
             if len(df) != 0:
-                MicroanaliseQuestoes(anos, df)
+                MicroanaliseQuestoes(data_anos, df)
             else:
                 st.write("Sem Dados para analizar")
             
