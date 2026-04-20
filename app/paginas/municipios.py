@@ -26,6 +26,7 @@ def pagina_municipios():
     )
     ids_municipios_multiplos = [lista_municipios[nome] for nome in nomes_municipios_multiplos]
     
+    default_anos = [2018] if 2018 in lista_anos else []
     anos = st.multiselect(
         "Escolha os anos de análise:",
         lista_anos,

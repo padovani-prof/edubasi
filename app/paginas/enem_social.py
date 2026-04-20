@@ -2,7 +2,7 @@ from importlib.resources import contents
 
 import streamlit as st
 import pandas as pd
-import funcao_social as fs
+import paginas.Social.funcao_social as fs
 from fontTools.cffLib import FDSelect
 from streamlit import sidebar
 import edubasi
