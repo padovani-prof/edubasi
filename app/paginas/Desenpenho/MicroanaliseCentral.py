@@ -3,8 +3,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
-
+import matplotlib.pyplot as plt
 import streamlit as st
+
+import plotly.graph_objects as go
 
 
 class MicroanaliseCentrais():
@@ -15,6 +17,7 @@ class MicroanaliseCentrais():
         for c in self.colunas:
             self.dados[c] = pd.to_numeric(self.dados[c], errors="coerce")
         self.anos = self.dados['NU_ANO'].unique()
+
 
     def dados_iniciais_de_microanalise(self):
 
@@ -33,6 +36,11 @@ class MicroanaliseCentrais():
         
 
         colu1, colu2, colu3, colu4, colu5, colu6 = st.columns(6)
+
+        if pd.isna(informacao[0]):
+            return  False # desativa a função se não houver dados para análise
+
+        st.header("Média Aritmética das Notas")
         with colu1:
             st.metric(label="Geral", value=informacao[0])
         with colu2:
@@ -45,6 +53,7 @@ class MicroanaliseCentrais():
             st.metric(label=self.colunas_nome[3], value=informacao[4])
         with colu6:
             st.metric(label=self.colunas_nome[4], value=informacao[5])
+        return True # ativa a função se houver dados para análise
     
 
     
@@ -308,31 +317,141 @@ class MicroanaliseCentrais():
 
         # Mostrar no Streamlit
         st.plotly_chart(fig, use_container_width=True)
-    
+
+
+    def criar_grafico_barra(self, dados):
+
+        faixas_renda = {
+            "A": "Nenhuma Renda",
+            "B": "Até R$ 1.212,00",
+            "C": "De R$ 1.212,01 até R$ 1.818,00",
+            "D": "De R$ 1.818,01 até R$ 2.424,00",
+            "E": "De R$ 2.424,01 até R$ 3.030,00",
+            "F": "De R$ 3.030,01 até R$ 3.636,00",
+            "G": "De R$ 3.636,01 até R$ 4.848,00",
+            "H": "De R$ 4.848,01 até R$ 6.060,00",
+            "I": "De R$ 6.060,01 até R$ 7.272,00",
+            "J": "De R$ 7.272,01 até R$ 8.484,00",
+            "K": "De R$ 8.484,01 até R$ 9.696,00",
+            "L": "De R$ 9.696,01 até R$ 10.908,00",
+            "M": "De R$ 10.908,01 até R$ 12.120,00",
+            "N": "De R$ 12.120,01 até R$ 14.544,00",
+            "O": "De R$ 14.544,01 até R$ 18.180,00",
+            "P": "De R$ 18.180,01 até R$ 24.240,00",
+            "Q": "Acima de R$ 24.240,00"
+        }
+
+        dados = dados.rename(index=faixas_renda)
+
+        fig = go.Figure()
+
+        for ano in dados.columns:
+            fig.add_trace(
+                go.Bar(
+                    x=dados.index,
+                    y=dados[ano],
+                    name=str(ano)
+                )
+            )
+
+        fig.update_layout(
+            barmode='group',
+            title='Média das notas por faixa salarial',
+            xaxis_title='Faixa Salarial (Q006)',
+            yaxis_title='Nota Média',
+            legend_title='Ano',
+            template='plotly_white',
+            height=500
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+
+   
+    def media_nota_por_salario(self):
+
+        dadosGeral = {}
+
+        for ano in self.anos:
+            dados = (
+                self.dados[self.dados['NU_ANO'] == ano]
+                [['Q006', 'NU_NOTA_CN', 'NU_NOTA_CH', 'NU_NOTA_LC',
+                'NU_NOTA_MT', 'NU_NOTA_REDACAO']]
+                .groupby('Q006')
+                .mean()
+            )
+
+            dadosGeral[ano] = dados
+
+       
+
+        cienciaNaturesa, cienciaHumana, linguagemCodigo, matematica, redacao = st.tabs([
+            'Ciência da Natureza',
+            'Ciência Humanas',
+            'Linguagens e Códigos',
+            'Matemática',
+            'Redação'
+        ])
+
+        # Junta todos os anos em um único DataFrame
+        df_final = pd.concat(
+            [
+                df.reset_index().assign(ANO=ano)
+                for ano, df in dadosGeral.items()
+            ],
+            ignore_index=True
+        )
+
+        with cienciaNaturesa:
+            
+            self.criar_grafico_barra(pd.DataFrame(df_final[['Q006', 'NU_NOTA_CN', 'ANO']].pivot(index='Q006', columns='ANO', values='NU_NOTA_CN').fillna(0)))
+                
+        with cienciaHumana:
+            self.criar_grafico_barra(pd.DataFrame(df_final[['Q006', 'NU_NOTA_CH', 'ANO']].pivot(index='Q006', columns='ANO', values='NU_NOTA_CH').fillna(0)))
+                          
+        with linguagemCodigo:
+            self.criar_grafico_barra(pd.DataFrame(df_final[['Q006', 'NU_NOTA_LC', 'ANO']].pivot(index='Q006', columns='ANO', values='NU_NOTA_LC').fillna(0)))
+        with matematica:
+            self.criar_grafico_barra(pd.DataFrame(df_final[['Q006', 'NU_NOTA_MT', 'ANO']].pivot(index='Q006', columns='ANO', values='NU_NOTA_MT').fillna(0)))
+        with redacao:
+            self.criar_grafico_barra(pd.DataFrame(df_final[['Q006', 'NU_NOTA_REDACAO', 'ANO']].pivot(index='Q006', columns='ANO', values='NU_NOTA_REDACAO').fillna(0)))
+        
 
     def pagina_microalise_centrais(self):
-        st.header("Média Aritmética das Notas")
-        self.dados_iniciais_de_microanalise()
-
-        with st.expander('Médias por ano e área'):
-            self.gerar_medias_por_ano_e_disciplina()
-
         
-        with st.expander("Histograma de médias gerais"):
-            self.grafico_istograma_geral()
+        possui_dados = self.dados_iniciais_de_microanalise()
 
-        with st.expander('Dispersão de notas'):
-            self.grafico_media_bloxoplot()
+        if possui_dados:
+            with st.expander('Médias por ano e área'):
+                self.gerar_medias_por_ano_e_disciplina()
+
+            
+            with st.expander("Histograma de médias gerais"):
+                self.grafico_istograma_geral()
+
+            with st.expander('Dispersão de notas'):
+                self.grafico_media_bloxoplot()
+            
+
+            with st.expander('Médias por administração da escola'):
+                self.criar_dataFreme_medias_matris(['Federal', 'Estadual', 'Municipal', 'Privada', 'Sem Informações'], 'TP_DEPENDENCIA_ADM_ESC')
+            
+
+            with st.expander('Médias por localidade da escola'):
+                self.criar_dataFreme_medias_matris(['Urbana', 'Rural', 'Sem Informação'], 'TP_LOCALIZACAO_ESC')
+            
+            with st.expander('Médias por modalidade de ensino'):
+                self.criar_dataFreme_medias_matris(['Ensino Regular', 'Educação Especial', 'Educação de Jovens e Adultos', 'Sem Informações'], 'TP_ENSINO')
+
+            with st.expander('Média de notas por faixa salarial'):
+                self.media_nota_por_salario()
+        else:
+    
+
+            st.warning(
+                "Não há microdados suficientes para calcular as médias das notas dos participantes."
+            )
         
 
-        with st.expander('Médias por administração da escola'):
-            self.criar_dataFreme_medias_matris(['Federal', 'Estadual', 'Municipal', 'Privada', 'Sem Informações'], 'TP_DEPENDENCIA_ADM_ESC')
-        
-
-        with st.expander('Médias por localidade da escola'):
-            self.criar_dataFreme_medias_matris(['Urbana', 'Rural', 'Sem Informação'], 'TP_LOCALIZACAO_ESC')
-        
-        with st.expander('Médias por modalidade de ensino'):
-            self.criar_dataFreme_medias_matris(['Ensino Regular', 'Educação Especial', 'Educação de Jovens e Adultos', 'Sem Informações'], 'TP_ENSINO')
 
 

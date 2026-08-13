@@ -155,6 +155,7 @@ def pagina_enem_desempenho():
                 ["1º Dia (LC, CH, R)", "2º Dia (MT, CN)"],
                 placeholder="Selecione a presença nas provas:"
             )
+            apenasQuestoesRespondida = st.checkbox("Deseja Analizar apenas as Questões que Foram Respondidas pelos alunos?", value=False)
 
 
     data_anos = anos if len(anos) > 0 else edubasi.obter_anos_selecionados()
@@ -173,23 +174,34 @@ def pagina_enem_desempenho():
     inscritos, presenca, macroanalise = st.tabs(['📝Inscritos', '🙋‍♂️Presença', '🔭Macroanálise'])
 
     with inscritos:
-        Incritos(df)
+        with st.spinner("⏳ Carregando Tela de Inscritos..."):
+            Incritos(df)
     with presenca:
-        Presenca(df)
+        with st.spinner("⏳ Carregando Tela de Presença..."):
+            Presenca(df)
+
     with macroanalise:
         macroanalise_questoes, macroanalise_centrais = st.tabs(['❓Macroanálise ➡ Questões', '🔢Macroanálise ➡ Medidas centrais'])
-        with macroanalise_questoes:
-            if len(df) != 0:
-                MicroanaliseQuestoes(data_anos, df)
-            else:
-                st.write("Sem Dados para analizar")
-            
+
         
         with macroanalise_centrais:
-            if len(df) != 0:
+            with st.spinner("⏳ Carregando Tela de Macroanálise ➡ Medidas centrais..."):
                 MicroanaliseCentrais(df).pagina_microalise_centrais()
-            else:
-                st.write("Sem Dados para analizar")
+
+        
+            with macroanalise_questoes:
+                try:
+                    
+                    with st.spinner("🔄 Fazendo cruzamento de dados e preparando os resultados..."):
+                        MicroanaliseQuestoes(data_anos, df, apenasQuestoesRespondida)
+                except Exception as e:
+                    st.warning(
+                            "Nenhum dado encontrado para o cruzamento entre questões e respostas. "
+                            "Altere os filtros e tente novamente."
+                        )
+                
+            
+            
 
 
         

@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import configparser
 from pathlib import Path
 class MicroanaliseQuestoes:
-    def __init__(self, anos, dados_aluno):
+    def __init__(self, anos, dados_aluno, apenasQuestoesRespondida):
         
         self.anos = anos
         self.dados_aluno = dados_aluno
@@ -37,7 +37,7 @@ class MicroanaliseQuestoes:
             'Discriminação':[0, 0, 0],
         }
 
-        apenasQuestoesRespondida = st.checkbox("Deseja Analizar apenas as Questões que Foram Respondidas pelos alunos?", value=False) 
+         
 
         self.dados_processados = self.acertos_por_habilidade_prova_especifica() # adiciona acertos por habilidade e codigos de provas diferentes
         
@@ -88,65 +88,97 @@ class MicroanaliseQuestoes:
 # carrega acertos por questões
 
 
-    def sub_acerto_a_questao_especifica(self, indice_correto_questao_campara, codigo_prova, gabarito_questao_especifica, questão_aria):
-        respostas_alunos = self.dados_aluno[(self.dados_aluno[f'CO_PROVA_{questão_aria}'] == codigo_prova)]
+    def sub_acerto_a_questao_especifica(
+        self,
+        indice_correto_questao_campara,
+        codigo_prova,
+        gabarito_questao_especifica,
+        questão_aria
+    ):
         '''
-            Essa filtagem seve para ter os dados apenas
-            dos alunos que fizeram aquela questão especifica.
+        Versão otimizada:
+            - Remove loop com iterrows()
+            - Usa operações vetorizadas (muito mais rápido)
+            - Reduz drasticamente o tempo de execução
         '''
-        
-        qdt_respostas_corretas = 0 if len(respostas_alunos) > 0 else None 
 
+        # Filtra alunos da prova específica
+        respostas_alunos = self.dados_aluno[
+            self.dados_aluno[f'CO_PROVA_{questão_aria}'] == codigo_prova
+        ]
 
-        #st.write(respostas_alunos if len(respostas_alunos) > 0 else None  )
-        '''
-            alguns codigo de prova não possui no dataFreme dos alunos respondidos
-            então não tem respostas para comparar a questão porisso retorna None.
-        '''
-        
+        # Se não houver alunos, retorna None
+        if respostas_alunos.empty:
+            return None, 0
 
-        for ln, aluno in  respostas_alunos.iterrows():
-            resposta_aluno = aluno[f'TX_RESPOSTAS_{questão_aria}']
-            if resposta_aluno[indice_correto_questao_campara] == gabarito_questao_especifica: # compara se a reposta do aluno esta correta
-                qdt_respostas_corretas +=1
-            
-            #st.write(resposta_aluno, resposta_aluno[indice_correto_questao_campara] == gabarito_questao_especifica, indice_correto_questao_campara, resposta_aluno[indice_correto_questao_campara], gabarito_questao_especifica, qdt_respostas_corretas)
-        return qdt_respostas_corretas, len(respostas_alunos) # retorna tambem as quantidade de acerto e quantos alunos responderam
+        # Pega todas as respostas da questão (string indexada)
+        respostas = respostas_alunos[f'TX_RESPOSTAS_{questão_aria}']
+
+        # Extrai a resposta de cada aluno na posição da questão
+        respostas_questao = respostas.str[indice_correto_questao_campara]
+
+        # Conta quantos acertaram (vetorizado)
+        qdt_respostas_corretas = (respostas_questao == gabarito_questao_especifica).sum()
+
+        return int(qdt_respostas_corretas), len(respostas_alunos)
     
 
 
 
+
+
+    
+
+
     def Atribuir_acertos_as_questoes(self, apenasQuestoesRespondida):
         '''
-            com os dados filtrados eu percorro eles tantando localizar todas as respostas daquele gabarito da quela prova
-            fazer a contagem de acertos da quela intenciadade
-            vou adicionar uma nova coluna no data freme de prova colocando a quantidade deacerto que a quela questão tenve dos alunos que fiseram a quela prova
-            eu comparo os gabaritos e vou adicionando um em 1 para cada acerto e atualizando no data freme
-            ate que todos os dados forem cotabilizados
+        Objetivo:
+            Calcular, para cada questão de cada prova, a quantidade de acertos
+            e a quantidade de alunos que responderam.
+
+        Melhorias aplicadas:
+            - Evita uso de .loc dentro de loops (muito lento)
+            - Substitui iterrows() por itertuples() (mais rápido)
+            - Usa listas para acumular resultados e atribui tudo de uma vez
+            - Reduz operações repetidas no DataFrame
         '''
 
-        dados = self.dados['CO_PROVA'].unique()
+        # Inicializa listas para armazenar resultados (muito mais rápido que escrever no DF)
+        acertos_lista = []
+        respondidos_lista = []
 
-        self.dados['QDT_ACERTOS_QUESTOES'] = None # quantidade de alunos que acertam a questão começa com vasio
-        self.dados['QDT_ALUNOS_RESPONDERAM_QUESTAO'] = 0 # quantidade de alunos que respoderam a questão começando inicialmente com 0
-        
-        for cod_prova_especifica in dados: # percorre as provas
-            Questoes_prova_especifica = self.dados[self.dados['CO_PROVA']== cod_prova_especifica] 
-            for ln, questão_unica in Questoes_prova_especifica.iterrows(): # percorre as quesstois
-                indice_correto_questao_campara = (questão_unica['CO_POSICAO'] % 45) - 1  # encontar o indece exato da questão para a comparação nas respostas 0 a 44
-                codigo_prova = questão_unica['CO_PROVA']  
-                gabarito_questao_especifica = questão_unica['TX_GABARITO']
-                questão_aria = questão_unica['SG_AREA']
-                acertos, qdt_alunos_responderam = self.sub_acerto_a_questao_especifica(indice_correto_questao_campara, 
-                                                             str(codigo_prova), 
-                                                             gabarito_questao_especifica,
-                                                             questão_aria)
-                
-                self.dados.loc[ln, 'QDT_ACERTOS_QUESTOES'] = acertos #atribui a quantidade de acertos a linha da questão
-                self.dados.loc[ln, 'QDT_ALUNOS_RESPONDERAM_QUESTAO'] = qdt_alunos_responderam #atribui a quantidade total de alunos que respoderam essa questão especifica
+        # Percorre cada linha do DataFrame (mais eficiente que iterrows)
+        for row in self.dados.itertuples(index=False):
+
+            # Calcula índice da questão (0 a 44)
+            indice = (row.CO_POSICAO % 45) - 1
+
+            # Extrai dados necessários
+            codigo_prova = row.CO_PROVA
+            gabarito = row.TX_GABARITO
+            area = row.SG_AREA
+
+            # Chama função de cálculo
+            acertos, respondidos = self.sub_acerto_a_questao_especifica(
+                indice,
+                str(codigo_prova),
+                gabarito,
+                area
+            )
+
+            # Armazena resultado nas listas
+            acertos_lista.append(acertos)
+            respondidos_lista.append(respondidos)
+
+        # Atribui tudo de uma vez (muito mais rápido)
+        self.dados['QDT_ACERTOS_QUESTOES'] = acertos_lista
+        self.dados['QDT_ALUNOS_RESPONDERAM_QUESTAO'] = respondidos_lista
+
+        # Filtro opcional
         if apenasQuestoesRespondida:
-            # filtra e pega so as questões que foram respondidos 
-            self.dados = self.dados[self.dados['QDT_ALUNOS_RESPONDERAM_QUESTAO']!=0] 
+            self.dados = self.dados[self.dados['QDT_ALUNOS_RESPONDERAM_QUESTAO'] != 0]
+            
+
                 
 
 # carrega acertos por questões
@@ -214,8 +246,8 @@ class MicroanaliseQuestoes:
         metricas_media = self.metricas_de_complexidade[coluna]
         percentua_metrica_chute = []
 
-        # st.write('Maximo valor da',coluna, self.dados[sg_complexidade].max())
-        # st.write('Minimo valor da',coluna, self.dados[sg_complexidade].min())
+        #st.write('Maximo valor da',coluna, self.dados[sg_complexidade].max())
+        #st.write('Minimo valor da',coluna, self.dados[sg_complexidade].min())
 
         for ano in self.anos:
             soma_acertos_baixo = 0
@@ -378,7 +410,7 @@ class MicroanaliseQuestoes:
             tabela.style
                 .hide(axis="index")
                 .set_tooltips(tooltips)
-                .set_table_attributes('style="width:100%"')  # 👈 força largura 100%
+                .set_table_attributes('style="width:100%"')  # 
         )
 
         html = styled.to_html()
@@ -482,15 +514,20 @@ class MicroanaliseQuestoes:
             
         tabela = pd.DataFrame(tabela)
         
+        
         return tabela
     
     def sub_apresentar_tabela(self, dados, corDados):
         # Tabela que será exibida
         tabela = dados[['Habilidade', 'Percentual de Acerto']]
 
+        
+
         # Criando dataframe de tooltips
         tooltips = pd.DataFrame("", index=tabela.index, columns=tabela.columns)
         tooltips["Habilidade"] = dados["descricao"]
+
+        #st.write(tooltips)
 
         styled = (
             tabela.style.hide(axis="index")
@@ -955,7 +992,7 @@ class MicroanaliseQuestoes:
         # st.write(self.dados_aluno.columns)
         # st.write(len(self.dados_aluno.columns))
         
-        # #st.write(self.dados_processados)
+        # st.write(self.dados_processados)
         # # st.write(self.dados)
        
         # #st.write(self.dados[(self.dados['CO_PROVA'] == 465)])  
