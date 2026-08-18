@@ -35,18 +35,26 @@ Para executar o projeto corretamente, faça o download dos arquivos corresponden
 
 microdados/
 ├── participantes/
-
 │   ├── 2018/
-
 │   │   └── 2018_1301902.parquet
-
-│   └── 2022/
-
+│   ├── 2019/
+│   │   └── 2019_1301902.parquet
+│   ├── 2020/
+│   │   └── 2020_1301902.parquet
+│   ├── 2021/
+│   │   └── 2021_1301902.parquet
+│   ├── 2022/
+│   │   └── 2022_1301902.parquet
+│   └── 2023/
+│       └── 2023_1301902.parquet
+│
 └── provas/
-
     ├── ITENS_PROVA_2018.csv
-    
-    └── ITENS_PROVA_2022.csv
+    ├── ITENS_PROVA_2019.csv
+    ├── ITENS_PROVA_2020.csv
+    ├── ITENS_PROVA_2021.csv
+    ├── ITENS_PROVA_2022.csv
+    └── ITENS_PROVA_2023.csv
     
 ```
 
