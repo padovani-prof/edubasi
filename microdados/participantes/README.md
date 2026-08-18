@@ -35,12 +35,19 @@ Para executar o projeto corretamente, faça o download dos arquivos corresponden
 
 microdados/
 ├── participantes/
+
 │   ├── 2018/
+
 │   │   └── 2018_1301902.parquet
+
 │   └── 2022/
+
 └── provas/
+
     ├── ITENS_PROVA_2018.csv
+    
     └── ITENS_PROVA_2022.csv
+    
 ```
 
 
