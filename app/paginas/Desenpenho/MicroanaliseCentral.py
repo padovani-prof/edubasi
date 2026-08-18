@@ -229,7 +229,7 @@ class MicroanaliseCentrais():
             return 0
 
     def gera_dataFreme_istograma_geral(self):
-        notas = ['1-100', '100-200', '200-300', '300-400', '400-500', '500-600', '600-700', '700-800', '800-900', '900-1000']
+        notas = ['1-99', '100-199', '200-299', '300-399', '400-499', '500-599', '600-699', '700-799', '800-899', '900-1000']
 
         # Criar DataFrame para armazenar os resultados
         a = []
@@ -237,7 +237,7 @@ class MicroanaliseCentrais():
             for _ in range(len(self.anos) +1):
                 a.append(nota)
         df_medias = {'Faixa de Notas': a} 
-        intervalos_notas = [(1,100), (100,200), (200,300), (300,400), (400,500), (500,600), (600,700), (700,800), (800,900), (900,1000)] 
+        intervalos_notas = [(1,100), (100,200), (200,300), (300,400), (400,500), (500,600), (600,700), (700,800), (800,900), (900,1001)] 
 
         df_medias['ano'] = []
 

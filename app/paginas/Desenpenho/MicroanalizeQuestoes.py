@@ -3,8 +3,9 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-import configparser
+import os
 from pathlib import Path
+import edubasi
 class MicroanaliseQuestoes:
     def __init__(self, anos, dados_aluno, apenasQuestoesRespondida):
         
@@ -50,18 +51,14 @@ class MicroanaliseQuestoes:
 # carrega acertos por prova
         
     def encontrar_dados_prova(self):
-        config = configparser.ConfigParser()
-        config.read("config.ini")
-        caminho = config.get("EDUBASI", "parquet_provas_questoes")
-
-        return caminho
+        return edubasi.obter_parquet_provas_dir()
 
     
     def carregar_csv(self):
         dados = []
         caminhos = self.encontrar_dados_prova()
         for ano in self.anos:
-            a = f'{caminhos}ITENS_PROVA_{ano}.csv' # caminho dos arquivos da prova
+            a = os.path.join(caminhos, f"ITENS_PROVA_{ano}.csv")
             df_ano = pd.read_csv(a, sep=';',  encoding='latin1')
             df_ano['ano'] = ano
             dados.append(df_ano)

@@ -9,25 +9,40 @@ import pandas as pd
 def __conectar():
     return duckdb.connect(":memory:")
 
+def __obter_config_path():
+    return os.path.join(os.getcwd(), "config.ini")
+
 @st.cache_resource
-def __obter_parquet_dir():
-    prop_file = os.path.join(os.getcwd(), "config.ini")
-    section_name = "EDUBASI"
-    prop_name = "parquet_dir"
+def __obter_config():
+    prop_file = __obter_config_path()
     if not os.path.exists(prop_file):
         print("Arquivo", prop_file, "não existe.")
         return None
-        
+
     config = configparser.ConfigParser()
     config.read(prop_file, encoding="utf-8")
-    if section_name not in config:
-        print("Seção", section_name, "não encontrada.")
+    if "EDUBASI" not in config:
+        print("Seção EDUBASI não encontrada.")
         return None
+    return config
 
-    if prop_name not in config[section_name]:
+def __obter_config_valor(prop_name):
+    config = __obter_config()
+    if config is None or prop_name not in config["EDUBASI"]:
         print("Propriedade", prop_name, "não encontrada.")
         return None
-    return config[section_name][prop_name]
+    return config["EDUBASI"][prop_name]
+
+@st.cache_resource
+def __obter_parquet_dir():
+    return __obter_config_valor("parquet_dir")
+
+@st.cache_resource
+def obter_parquet_provas_dir():
+    caminho = __obter_config_valor("parquet_provas_questoes")
+    if caminho is None:
+        return None
+    return os.path.normpath(caminho)
 
 def obter_dados(ano, id_municipio):
     id_sessao = ano + "_" + id_municipio
@@ -36,7 +51,8 @@ def obter_dados(ano, id_municipio):
     parquet_dir = __obter_parquet_dir()
     parquet = os.path.join(parquet_dir, ano, f"{ano}_{id_municipio}.parquet")
     con = __conectar()
-    df = con.execute(f"SELECT * FROM parquet_scan('{parquet}')").df()
+    parquet_sql = parquet.replace("\\", "/")
+    df = con.execute(f"SELECT * FROM parquet_scan('{parquet_sql}')").df()
     if str(ano) == '2018':
         df["TP_ESTADO_CIVIL"] = df["TP_ESTADO_CIVIL"].fillna("-1")
         df["TP_ESTADO_CIVIL"] = (df["TP_ESTADO_CIVIL"].astype(int) + 1).astype(str)

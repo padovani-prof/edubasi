@@ -1,0 +1,10 @@
+services:
+  edubasi:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./app/config.docker.ini:/app/config.ini:ro
+      - ./microdados/participantes:/data/participantes:ro
+      - ./microdados/provas:/data/provas:ro
+    restart: unless-stopped

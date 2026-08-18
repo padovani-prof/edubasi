@@ -8,6 +8,10 @@
 
 
 
-6) Adicione o diretorio onde estão os arquivos da base de dados da prova em parquet_provas = caminho do arquivo confg.ini
+6) Configure os caminhos dos microdados no arquivo config.ini:
+   - parquet_dir: pasta com os arquivos parquet dos participantes (por ano/município)
+   - parquet_provas_questoes: pasta com os arquivos ITENS_PROVA_{ano}.csv
 
-exe: parquet_provas=/home/fabio-leal/Python/Enem-Graficos-UEA-main/dadosProva/
+exe:
+parquet_dir=C:\caminho\microdados\participantes
+parquet_provas_questoes=C:\caminho\microdados\provas
